@@ -4,59 +4,231 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { Home, ArrowLeft, Lightbulb, AlertTriangle, BookOpen, BookText, Gamepad2 } from 'lucide-react'
 import { getTopicBySlug, GRADES } from '@/lib/curriculum'
-import { NumberCardGame, MathPractice } from '@/components/interactive-learning'
+import { NumberCardGame, MathPractice, PerimeterPractice } from '@/components/interactive-learning'
 
-// 根据知识点 slug 判断应该使用哪种交互组件
-const getInteractiveComponent = (slug: string, gradeId: number) => {
-  // 数字认知类
-  if (slug.includes('1-20') || slug.includes('1-100') || slug.includes('number') || slug.includes('count')) {
+type InteractiveConfig = 
+  | { type: 'number-game'; props: { maxNumber: number } }
+  | { type: 'math-practice'; props: { operation: 'add' | 'subtract' | 'multiply' | 'divide' | 'mixed'; maxNumber: number } }
+  | { type: 'perimeter'; props: { shape: 'rectangle' | 'square' | 'mixed' } }
+
+// 根据知识点 slug 精确匹配交互组件
+const getInteractiveComponent = (slug: string, gradeId: number): InteractiveConfig => {
+  // ========== 数字认知类 ==========
+  if (slug === 'g1-1-20' || slug === 'g1-1-100' || slug.includes('number') || slug.includes('count')) {
     return {
       type: 'number-game' as const,
-      props: { maxNumber: slug.includes('1-100') || slug.includes('100') ? 100 : 20 }
+      props: { maxNumber: slug === 'g1-1-100' ? 100 : 20 }
     }
   }
   
-  // 加法类
-  if (slug.includes('add') || slug.includes('plus') || slug.includes('加法') || slug.includes('进位')) {
+  // ========== 加减法类 ==========
+  // 10以内加法
+  if (slug === 'g1-add-10') {
     return {
       type: 'math-practice' as const,
-      props: { operation: 'add' as const, maxNumber: gradeId <= 1 ? 20 : gradeId <= 2 ? 100 : 1000 }
+      props: { operation: 'add' as const, maxNumber: 10 }
     }
   }
   
-  // 减法类
-  if (slug.includes('sub') || slug.includes('minus') || slug.includes('减法') || slug.includes('退位')) {
+  // 20以内加法（不进位/进位）
+  if (slug === 'g1-add-20-no-carry') {
     return {
       type: 'math-practice' as const,
-      props: { operation: 'subtract' as const, maxNumber: gradeId <= 1 ? 20 : gradeId <= 2 ? 100 : 1000 }
+      props: { operation: 'add' as const, maxNumber: 20 }
     }
   }
   
-  // 乘法类
-  if (slug.includes('mul') || slug.includes('times') || slug.includes('乘法') || slug.includes('口诀')) {
+  if (slug === 'g1-add-20') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'add' as const, maxNumber: 20 }
+    }
+  }
+  
+  // 20以内减法
+  if (slug === 'g1-sub-20-no-borrow' || slug === 'g1-sub-20') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'subtract' as const, maxNumber: 20 }
+    }
+  }
+  
+  // 100以内加减法
+  if (slug === 'g2-add-sub-100' || slug === 'g3-multi-digit-add-sub') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // 混合运算
+  if (slug === 'g2-mixed-ops') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // ========== 乘除法类 ==========
+  if (slug === 'g2-mul-table' || slug === 'g3-multi-digit-mul' || slug === 'g3-two-digit-mul') {
     return {
       type: 'math-practice' as const,
       props: { operation: 'multiply' as const, maxNumber: 9 }
     }
   }
   
-  // 除法类
-  if (slug.includes('div') || slug.includes('除法') || slug.includes('表内除')) {
+  if (slug === 'g2-division' || slug === 'g3-division') {
     return {
       type: 'math-practice' as const,
       props: { operation: 'divide' as const, maxNumber: 81 }
     }
   }
   
-  // 混合运算
-  if (slug.includes('mixed') || slug.includes('混合')) {
+  // ========== 几何/周长/面积类 ==========
+  if (slug === 'g3-perimeter') {
     return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: gradeId <= 2 ? 20 : 100 }
+      type: 'perimeter' as const,
+      props: { shape: 'mixed' as const }
     }
   }
   
-  // 默认根据年级返回合适的组件
+  if (slug === 'g3-area' || slug === 'g5-polygon-area') {
+    return {
+      type: 'perimeter' as const, // 暂时用周长组件，后续可创建面积专用组件
+      props: { shape: 'mixed' as const }
+    }
+  }
+  
+  // ========== 其他数学概念 ==========
+  // 比较大小
+  if (slug === 'g1-compare') {
+    return {
+      type: 'number-game' as const,
+      props: { maxNumber: 100 }
+    }
+  }
+  
+  // 心算/速算
+  if (slug === 'g2-mental-calc') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // 大数认识
+  if (slug === 'g4-large-numbers') {
+    return {
+      type: 'number-game' as const,
+      props: { maxNumber: 10000 }
+    }
+  }
+  
+  // 小数
+  if (slug === 'g4-decimal-intro') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // 分数
+  if (slug === 'g3-fractions-intro' || slug === 'g5-fraction-ops') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // 百分数
+  if (slug === 'g6-percent') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // 圆的周长面积
+  if (slug === 'g6-circle') {
+    return {
+      type: 'perimeter' as const,
+      props: { shape: 'mixed' }
+    }
+  }
+  
+  // 比例
+  if (slug === 'g6-proportion') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // 方程
+  if (slug === 'g5-equation-problems') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // ========== 图形类（认识图形，没有计算） ==========
+  if (slug === 'g1-shapes' || slug === 'g1-plane-shapes' || slug === 'g4-triangle') {
+    return {
+      type: 'number-game' as const,
+      props: { maxNumber: 20 }
+    }
+  }
+  
+  // ========== 测量单位类 ==========
+  if (slug === 'g2-length' || slug === 'g2-mass' || slug === 'g3-time') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // 角度
+  if (slug === 'g2-angle') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 180 }
+    }
+  }
+  
+  // ========== 应用/趣味类 ==========
+  if (slug === 'g1-math-fun' || slug === 'g1-sort' || slug === 'g1-position' || slug === 'g2-observe' || slug === 'g2-data-collect') {
+    return {
+      type: 'number-game' as const,
+      props: { maxNumber: 50 }
+    }
+  }
+  
+  // 时钟
+  if (slug === 'g1-clock') {
+    return {
+      type: 'number-game' as const,
+      props: { maxNumber: 12 }
+    }
+  }
+  
+  // 钱币
+  if (slug === 'g1-money') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: 100 }
+    }
+  }
+  
+  // 线段
+  if (slug === 'g2-line-segment') {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'add' as const, maxNumber: 100 }
+    }
+  }
+  
+  // ========== 默认 ==========
   if (gradeId <= 2) {
     return {
       type: 'number-game' as const,
@@ -136,7 +308,7 @@ export default function TopicPageClient() {
           )}
         </header>
 
-        {/* ===== 交互式学习区域（核心新增） ===== */}
+        {/* ===== 交互式学习区域 ===== */}
         <section className="mb-8">
           <div className="mb-4 flex items-center gap-2">
             <Gamepad2 className="h-6 w-6 text-indigo-600" />
@@ -155,6 +327,10 @@ export default function TopicPageClient() {
               operation={interactiveConfig.props.operation} 
               maxNumber={interactiveConfig.props.maxNumber}
             />
+          )}
+          
+          {interactiveConfig.type === 'perimeter' && (
+            <PerimeterPractice shape={interactiveConfig.props.shape} />
           )}
         </section>
 
