@@ -2,8 +2,73 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Home, ArrowLeft, Lightbulb, AlertTriangle, BookOpen, BookText } from 'lucide-react'
+import { Home, ArrowLeft, Lightbulb, AlertTriangle, BookOpen, BookText, Gamepad2 } from 'lucide-react'
 import { getTopicBySlug, GRADES } from '@/lib/curriculum'
+import { NumberCardGame, MathPractice } from '@/components/interactive-learning'
+
+// 根据知识点 slug 判断应该使用哪种交互组件
+const getInteractiveComponent = (slug: string, gradeId: number) => {
+  // 数字认知类
+  if (slug.includes('1-20') || slug.includes('1-100') || slug.includes('number') || slug.includes('count')) {
+    return {
+      type: 'number-game' as const,
+      props: { maxNumber: slug.includes('1-100') || slug.includes('100') ? 100 : 20 }
+    }
+  }
+  
+  // 加法类
+  if (slug.includes('add') || slug.includes('plus') || slug.includes('加法') || slug.includes('进位')) {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'add' as const, maxNumber: gradeId <= 1 ? 20 : gradeId <= 2 ? 100 : 1000 }
+    }
+  }
+  
+  // 减法类
+  if (slug.includes('sub') || slug.includes('minus') || slug.includes('减法') || slug.includes('退位')) {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'subtract' as const, maxNumber: gradeId <= 1 ? 20 : gradeId <= 2 ? 100 : 1000 }
+    }
+  }
+  
+  // 乘法类
+  if (slug.includes('mul') || slug.includes('times') || slug.includes('乘法') || slug.includes('口诀')) {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'multiply' as const, maxNumber: 9 }
+    }
+  }
+  
+  // 除法类
+  if (slug.includes('div') || slug.includes('除法') || slug.includes('表内除')) {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'divide' as const, maxNumber: 81 }
+    }
+  }
+  
+  // 混合运算
+  if (slug.includes('mixed') || slug.includes('混合')) {
+    return {
+      type: 'math-practice' as const,
+      props: { operation: 'mixed' as const, maxNumber: gradeId <= 2 ? 20 : 100 }
+    }
+  }
+  
+  // 默认根据年级返回合适的组件
+  if (gradeId <= 2) {
+    return {
+      type: 'number-game' as const,
+      props: { maxNumber: gradeId === 1 ? 20 : 100 }
+    }
+  }
+  
+  return {
+    type: 'math-practice' as const,
+    props: { operation: 'mixed' as const, maxNumber: 100 }
+  }
+}
 
 export default function TopicPageClient() {
   const params = useParams()
@@ -16,8 +81,8 @@ export default function TopicPageClient() {
         <div className="mx-auto max-w-4xl px-6 py-20 text-center">
           <div className="text-6xl mb-4">🤔</div>
           <h1 className="text-2xl font-bold text-slate-800 mb-4">找不到这个知识点</h1>
-          <Link href="/knowledge-map" className="rounded-full bg-indigo-500 px-6 py-2 text-white font-bold shadow">
-            返回知识地图
+          <Link href="/" className="rounded-full bg-indigo-500 px-6 py-2 text-white font-bold shadow">
+            返回首页
           </Link>
         </div>
       </main>
@@ -25,7 +90,7 @@ export default function TopicPageClient() {
   }
 
   const { topic, grade } = data
-  // 从 topic 对象中获取 category 信息（在实际应用中应该从数据结构中获取）
+  const interactiveConfig = getInteractiveComponent(slug, grade.id)
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -37,12 +102,6 @@ export default function TopicPageClient() {
           >
             <ArrowLeft className="h-4 w-4" />
             {grade.title}
-          </Link>
-          <Link
-            href="/knowledge-map"
-            className="inline-flex items-center gap-1 rounded-full bg-white/70 px-4 py-1.5 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-white"
-          >
-            知识地图
           </Link>
           <Link
             href="/"
@@ -76,6 +135,28 @@ export default function TopicPageClient() {
             </Link>
           )}
         </header>
+
+        {/* ===== 交互式学习区域（核心新增） ===== */}
+        <section className="mb-8">
+          <div className="mb-4 flex items-center gap-2">
+            <Gamepad2 className="h-6 w-6 text-indigo-600" />
+            <h2 className="text-xl font-bold text-slate-800">🎯 互动学习</h2>
+            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-600">
+              边玩边学
+            </span>
+          </div>
+          
+          {interactiveConfig.type === 'number-game' && (
+            <NumberCardGame maxNumber={interactiveConfig.props.maxNumber} />
+          )}
+          
+          {interactiveConfig.type === 'math-practice' && (
+            <MathPractice 
+              operation={interactiveConfig.props.operation} 
+              maxNumber={interactiveConfig.props.maxNumber}
+            />
+          )}
+        </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-6">
@@ -153,7 +234,7 @@ export default function TopicPageClient() {
 
             {topic.relatedTools.length > 0 && (
               <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5 shadow-md">
-                <div className="mb-3 font-bold text-indigo-700">🎮 相关练习工具</div>
+                <div className="mb-3 font-bold text-indigo-700">🎮 更多练习工具</div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {topic.relatedTools.map((tool) => {
                     const toolMap: Record<string, { label: string; emoji: string }> = {
