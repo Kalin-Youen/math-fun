@@ -23,6 +23,17 @@ const MapIcon = Sparkles
 
 const coreModules: ModuleType[] = [
   {
+    title: '数学大冒险',
+    desc: '闯关模式、积分系统、成就徽章',
+    icon: Trophy,
+    href: '/adventure',
+    gradient: 'from-yellow-400 via-orange-500 to-red-500',
+    emoji: '🏆',
+    bg: 'bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50',
+    xpReward: 30,
+    badge: 'NEW',
+  },
+  {
     title: '智能练习',
     desc: '智能出题、错题重练、每日一练',
     icon: Brain,
@@ -31,7 +42,6 @@ const coreModules: ModuleType[] = [
     emoji: '🧠',
     bg: 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50',
     xpReward: 20,
-    badge: 'NEW',
   },
   {
     title: '速算练习',
