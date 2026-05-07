@@ -12,18 +12,13 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/icons/icon-72x72.png', sizes: '72x72' },
-      { url: '/icons/icon-96x96.png', sizes: '96x96' },
-      { url: '/icons/icon-128x128.png', sizes: '128x128' },
-      { url: '/icons/icon-144x144.png', sizes: '144x144' },
-      { url: '/icons/icon-152x152.png', sizes: '152x152' },
-      { url: '/icons/icon-192x192.png', sizes: '192x192' },
-      { url: '/icons/icon-384x384.png', sizes: '384x384' },
-      { url: '/icons/icon-512x512.png', sizes: '512x512' },
+      { url: '/icons/icon-72x72.svg', sizes: '72x72' },
+      { url: '/icons/icon-96x96.svg', sizes: '96x96' },
+      { url: '/icons/icon-192x192.svg', sizes: '192x192' },
+      { url: '/icons/icon-512x512.svg', sizes: '512x512' },
     ],
     apple: [
-      { url: '/icons/icon-152x152.png', sizes: '152x152' },
-      { url: '/icons/icon-180x180.png', sizes: '180x180' },
+      { url: '/icons/icon-192x192.svg', sizes: '180x180' },
     ],
   },
 }
