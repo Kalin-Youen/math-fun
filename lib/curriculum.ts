@@ -1,3 +1,11 @@
+export interface TextbookSection {
+  chapter: string
+  section: string
+  content: string
+  examples?: { title: string; content: string }[]
+  exercises?: { question: string; hint?: string }[]
+}
+
 export interface Topic {
   slug: string
   title: string
@@ -9,6 +17,7 @@ export interface Topic {
   commonMistakes: string[]
   practiceTypes: string[]
   relatedTools: string[]
+  textbookContent?: TextbookSection
 }
 
 export interface Grade {
@@ -44,6 +53,20 @@ export const GRADES: Grade[] = [
             commonMistakes: ['把11写成101', '数数时跳数或重复'],
             practiceTypes: ['数数', '比大小', '填相邻数'],
             relatedTools: ['/number-sense', '/number-line'],
+            textbookContent: {
+              chapter: '第一单元 准备课',
+              section: '1~20的认识',
+              content: '【学习目标】\n1. 能够正确地数出1~20各数\n2. 知道这些数的顺序和大小\n3. 初步认识个位和十位\n\n【知识讲解】\n一、数数\n从1开始数：1、2、3、4、5、6、7、8、9、10、11、12、13、14、15、16、17、18、19、20\n\n二、数的组成\n10个一是1个十\n11 = 1个十 + 1个一\n12 = 1个十 + 2个一\n...\n20 = 2个十\n\n三、数的大小比较\n十位相同，个位大的数就大\n个位相同，十位大的数就大',
+              examples: [
+                { title: '例1：数一数，填一填', content: '图中有（ ）个苹果。\n\n解答：一个一个地数，1、2、3... 一共有12个苹果。' },
+                { title: '例2：比较大小', content: '15 ○ 18\n\n解答：15和18都是两位数，十位都是1，比较个位：5 < 8，所以 15 < 18' },
+              ],
+              exercises: [
+                { question: '1. 从1数到20，再倒着数回来。', hint: '注意：十几的数是由1个十和几个一组成的' },
+                { question: '2. 16是由（ ）个十和（ ）个一组成的。', hint: '16 = 10 + 6' },
+                { question: '3. 在○里填上"＞""＜"或"＝"。\n13 ○ 17    20 ○ 12    15 ○ 15', hint: '先比十位，十位相同再比个位' },
+              ],
+            },
           },
           {
             slug: 'g1-1-100',
