@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+out
+dist
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# Local env files
+.env*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Build and Release Folders
+bin-debug/
+bin-release/
+[Oo]bj/
+[Bb]in/
+
+# Other files and folders
+.settings/
+
+# Executables
+*.swf
+*.air
+*.ipa
+*.apk
