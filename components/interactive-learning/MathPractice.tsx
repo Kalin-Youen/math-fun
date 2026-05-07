@@ -14,16 +14,17 @@ export default function MathPractice({
   maxNumber = 20,
   allowNegative = false 
 }: MathPracticeProps) {
-  const [num1, setNum1] = useState(0)
-  const [num2, setNum2] = useState(0)
+  const [num1, setNum1] = useState(1)
+  const [num2, setNum2] = useState(1)
   const [operator, setOperator] = useState('+')
   const [answer, setAnswer] = useState('')
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
   const [showResult, setShowResult] = useState<'correct' | 'wrong' | null>(null)
-  const [correctAnswer, setCorrectAnswer] = useState(0)
+  const [correctAnswer, setCorrectAnswer] = useState(2)
   const [totalAttempts, setTotalAttempts] = useState(0)
   const [showHint, setShowHint] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   const operators: Record<string, string> = {
     'add': '+',
@@ -79,11 +80,14 @@ export default function MathPractice({
     setAnswer('')
     setShowResult(null)
     setShowHint(false)
+    setIsInitialized(true)
   }, [operation, maxNumber, allowNegative])
 
   useEffect(() => {
-    generateProblem()
-  }, [generateProblem])
+    if (!isInitialized) {
+      generateProblem()
+    }
+  }, [generateProblem, isInitialized])
 
   const handleSubmit = () => {
     if (!answer) return
