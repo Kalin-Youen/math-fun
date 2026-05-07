@@ -49,10 +49,19 @@ export default function MathPractice({
       n1 = n2 * (Math.floor(Math.random() * 10) + 1)
     }
     
-    // 乘法限制范围
+    // 乘法限制范围（一位数乘一位数）
     if (op === 'multiply') {
       n1 = Math.floor(Math.random() * 9) + 1
       n2 = Math.floor(Math.random() * 9) + 1
+    }
+    
+    // 加减法：限制数字范围，避免过大的数
+    if (op === 'add' || op === 'subtract') {
+      // 对于大数运算，限制在合理的两位数范围内
+      if (maxNumber > 100) {
+        n1 = Math.floor(Math.random() * 99) + 1  // 1-99
+        n2 = Math.floor(Math.random() * 99) + 1  // 1-99
+      }
     }
 
     setNum1(n1)
