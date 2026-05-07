@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Home, ArrowLeft, Lightbulb, AlertTriangle, BookOpen } from 'lucide-react'
+import { Home, ArrowLeft, Lightbulb, AlertTriangle, BookOpen, BookText } from 'lucide-react'
 import { getTopicBySlug, GRADES } from '@/lib/curriculum'
 
 export default function TopicPageClient() {
@@ -66,6 +66,17 @@ export default function TopicPageClient() {
             <h1 className="text-3xl font-extrabold text-slate-800">{topic.title}</h1>
           </div>
           <p className="mt-2 text-lg text-slate-600">{topic.desc}</p>
+          
+          {/* 教材原文入口 */}
+          {topic.textbookContent && (
+            <Link
+              href={`/textbook/${slug}`}
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-100 px-4 py-2 text-sm font-bold text-amber-700 transition hover:bg-amber-200"
+            >
+              <BookText className="h-4 w-4" />
+              查看教材原文
+            </Link>
+          )}
         </header>
 
         <div className="grid gap-6 lg:grid-cols-2">
