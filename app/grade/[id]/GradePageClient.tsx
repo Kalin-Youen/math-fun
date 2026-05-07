@@ -2,8 +2,16 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Home, ArrowLeft } from 'lucide-react'
+import { Home, ArrowLeft, Gamepad2, Brain, Bot, Trophy } from 'lucide-react'
 import { GRADES, getGradeById } from '@/lib/curriculum'
+
+// 年级页面快捷功能
+const gradeQuickTools = [
+  { title: '数学大冒险', emoji: '🏆', href: '/adventure', desc: '闯关游戏', icon: Trophy, color: 'from-yellow-400 to-orange-500' },
+  { title: '智能练习', emoji: '🧠', href: '/practice', desc: 'AI出题', icon: Brain, color: 'from-indigo-400 to-purple-500' },
+  { title: 'AI辅导', emoji: '🤖', href: '/ai-tutor', desc: '拍照解题', icon: Bot, color: 'from-cyan-400 to-blue-500' },
+  { title: '趣味游戏', emoji: '🎮', href: '/fun', desc: '数学游戏', icon: Gamepad2, color: 'from-emerald-400 to-teal-500' },
+]
 
 export default function GradePageClient() {
   const params = useParams()
@@ -55,6 +63,32 @@ export default function GradePageClient() {
             {grade.categories.length}个分类 · {totalTopics}个知识点
           </p>
         </header>
+
+        {/* 快捷功能入口 */}
+        <section className="mb-8">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-700">
+            <span className="text-2xl">🎮</span>
+            游戏与工具
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {gradeQuickTools.map((tool) => {
+              const Icon = tool.icon
+              return (
+                <Link key={tool.href} href={tool.href} className="group block">
+                  <div className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${tool.color} text-xl shadow-md transition-transform duration-300 group-hover:scale-110`}>
+                      {tool.emoji}
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-slate-700">{tool.title}</div>
+                      <div className="text-xs text-slate-400">{tool.desc}</div>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
 
         <div className="space-y-8">
           {grade.categories.map((cat) => (
