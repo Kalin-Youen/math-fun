@@ -2,244 +2,129 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Home, ArrowLeft, Lightbulb, AlertTriangle, BookOpen, BookText, Gamepad2 } from 'lucide-react'
+import { Home, ArrowLeft, Lightbulb, AlertTriangle, BookOpen, BookText, Gamepad2, BookMarked, Calculator } from 'lucide-react'
 import { getTopicBySlug, GRADES } from '@/lib/curriculum'
-import { NumberCardGame, MathPractice, PerimeterPractice } from '@/components/interactive-learning'
+import { NumberCardGame, MathPractice, PerimeterPractice, ShapeExplorer, ClockLearning, MoneyCalculator } from '@/components/interactive-learning'
 
-type InteractiveConfig = 
+type InteractiveConfig =
   | { type: 'number-game'; props: { maxNumber: number } }
   | { type: 'math-practice'; props: { operation: 'add' | 'subtract' | 'multiply' | 'divide' | 'mixed'; maxNumber: number } }
   | { type: 'perimeter'; props: { shape: 'rectangle' | 'square' | 'mixed' } }
+  | { type: 'shape-explorer'; props: { grade: number } }
+  | { type: 'clock-learning'; props: {} }
+  | { type: 'money-calculator'; props: { maxAmount: number } }
 
 // 根据知识点 slug 精确匹配交互组件
 const getInteractiveComponent = (slug: string, gradeId: number): InteractiveConfig => {
   // ========== 数字认知类 ==========
-  if (slug === 'g1-1-20' || slug === 'g1-1-100' || slug.includes('number') || slug.includes('count')) {
-    return {
-      type: 'number-game' as const,
-      props: { maxNumber: slug === 'g1-1-100' ? 100 : 20 }
-    }
+  if (slug === 'g1-1-20') {
+    return { type: 'number-game', props: { maxNumber: 20 } }
   }
-  
-  // ========== 加减法类 ==========
-  // 10以内加法
-  if (slug === 'g1-add-10') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'add' as const, maxNumber: 10 }
-    }
+  if (slug === 'g1-1-100') {
+    return { type: 'number-game', props: { maxNumber: 100 } }
   }
-  
-  // 20以内加法（不进位/进位）
-  if (slug === 'g1-add-20-no-carry') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'add' as const, maxNumber: 20 }
-    }
-  }
-  
-  if (slug === 'g1-add-20') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'add' as const, maxNumber: 20 }
-    }
-  }
-  
-  // 20以内减法
-  if (slug === 'g1-sub-20-no-borrow' || slug === 'g1-sub-20') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'subtract' as const, maxNumber: 20 }
-    }
-  }
-  
-  // 100以内加减法
-  if (slug === 'g2-add-sub-100' || slug === 'g3-multi-digit-add-sub') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
-  }
-  
-  // 混合运算
-  if (slug === 'g2-mixed-ops') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
-  }
-  
-  // ========== 乘除法类 ==========
-  if (slug === 'g2-mul-table' || slug === 'g3-multi-digit-mul' || slug === 'g3-two-digit-mul') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'multiply' as const, maxNumber: 9 }
-    }
-  }
-  
-  if (slug === 'g2-division' || slug === 'g3-division') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'divide' as const, maxNumber: 81 }
-    }
-  }
-  
-  // ========== 几何/周长/面积类 ==========
-  if (slug === 'g3-perimeter') {
-    return {
-      type: 'perimeter' as const,
-      props: { shape: 'mixed' as const }
-    }
-  }
-  
-  if (slug === 'g3-area' || slug === 'g5-polygon-area') {
-    return {
-      type: 'perimeter' as const, // 暂时用周长组件，后续可创建面积专用组件
-      props: { shape: 'mixed' as const }
-    }
-  }
-  
-  // ========== 其他数学概念 ==========
-  // 比较大小
-  if (slug === 'g1-compare') {
-    return {
-      type: 'number-game' as const,
-      props: { maxNumber: 100 }
-    }
-  }
-  
-  // 心算/速算
-  if (slug === 'g2-mental-calc') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
-  }
-  
-  // 大数认识
   if (slug === 'g4-large-numbers') {
-    return {
-      type: 'number-game' as const,
-      props: { maxNumber: 10000 }
-    }
+    return { type: 'number-game', props: { maxNumber: 10000 } }
   }
-  
-  // 小数
-  if (slug === 'g4-decimal-intro') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
+
+  // ========== 比较大小 ==========
+  if (slug === 'g1-compare') {
+    return { type: 'number-game', props: { maxNumber: 100 } }
   }
-  
-  // 分数
-  if (slug === 'g3-fractions-intro' || slug === 'g5-fraction-ops') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
+
+  // ========== 加减法类 ==========
+  if (slug === 'g1-add-10') {
+    return { type: 'math-practice', props: { operation: 'add', maxNumber: 10 } }
   }
-  
-  // 百分数
-  if (slug === 'g6-percent') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
+  if (slug === 'g1-add-20-no-carry' || slug === 'g1-add-20') {
+    return { type: 'math-practice', props: { operation: 'add', maxNumber: 20 } }
   }
-  
-  // 圆的周长面积
-  if (slug === 'g6-circle') {
-    return {
-      type: 'perimeter' as const,
-      props: { shape: 'mixed' }
-    }
+  if (slug === 'g1-sub-20-no-borrow' || slug === 'g1-sub-20') {
+    return { type: 'math-practice', props: { operation: 'subtract', maxNumber: 20 } }
   }
-  
-  // 比例
-  if (slug === 'g6-proportion') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
+  if (slug === 'g2-add-sub-100') {
+    return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
   }
-  
-  // 方程
-  if (slug === 'g5-equation-problems') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
+  if (slug === 'g3-multi-digit-add-sub') {
+    return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 1000 } }
   }
-  
-  // ========== 图形类（认识图形，没有计算） ==========
+
+  // ========== 混合运算 ==========
+  if (slug === 'g2-mixed-ops' || slug === 'g2-mental-calc') {
+    return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
+  }
+
+  // ========== 乘除法类 ==========
+  if (slug === 'g2-mul-table') {
+    return { type: 'math-practice', props: { operation: 'multiply', maxNumber: 9 } }
+  }
+  if (slug === 'g3-multi-digit-mul' || slug === 'g3-two-digit-mul') {
+    return { type: 'math-practice', props: { operation: 'multiply', maxNumber: 100 } }
+  }
+  if (slug === 'g2-division' || slug === 'g3-division') {
+    return { type: 'math-practice', props: { operation: 'divide', maxNumber: 81 } }
+  }
+
+  // ========== 几何/图形类 ==========
   if (slug === 'g1-shapes' || slug === 'g1-plane-shapes' || slug === 'g4-triangle') {
-    return {
-      type: 'number-game' as const,
-      props: { maxNumber: 20 }
-    }
+    return { type: 'shape-explorer', props: { grade: gradeId } }
   }
-  
+
+  // ========== 周长/面积类 ==========
+  if (slug === 'g3-perimeter') {
+    return { type: 'perimeter', props: { shape: 'mixed' } }
+  }
+  if (slug === 'g3-area' || slug === 'g5-polygon-area') {
+    return { type: 'perimeter', props: { shape: 'mixed' } }
+  }
+  if (slug === 'g6-circle') {
+    return { type: 'perimeter', props: { shape: 'mixed' } }
+  }
+
   // ========== 测量单位类 ==========
-  if (slug === 'g2-length' || slug === 'g2-mass' || slug === 'g3-time') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
+  if (slug === 'g2-length' || slug === 'g2-mass') {
+    return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
   }
-  
-  // 角度
   if (slug === 'g2-angle') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 180 }
-    }
+    return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 180 } }
   }
-  
+
+  // ========== 时间/钟表 ==========
+  if (slug === 'g1-clock' || slug === 'g3-time') {
+    return { type: 'clock-learning', props: {} }
+  }
+
+  // ========== 钱币 ==========
+  if (slug === 'g1-money') {
+    return { type: 'money-calculator', props: { maxAmount: 20 } }
+  }
+
+  // ========== 线段 ==========
+  if (slug === 'g2-line-segment') {
+    return { type: 'math-practice', props: { operation: 'add', maxNumber: 100 } }
+  }
+
+  // ========== 小数/分数/百分数 ==========
+  if (slug === 'g4-decimal-intro' || slug === 'g3-fractions-intro' || slug === 'g5-fraction-ops' || slug === 'g6-percent') {
+    return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
+  }
+
+  // ========== 方程/比例 ==========
+  if (slug === 'g5-equation-problems' || slug === 'g6-proportion') {
+    return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
+  }
+
   // ========== 应用/趣味类 ==========
   if (slug === 'g1-math-fun' || slug === 'g1-sort' || slug === 'g1-position' || slug === 'g2-observe' || slug === 'g2-data-collect') {
-    return {
-      type: 'number-game' as const,
-      props: { maxNumber: 50 }
-    }
+    return { type: 'number-game', props: { maxNumber: 50 } }
   }
-  
-  // 时钟
-  if (slug === 'g1-clock') {
-    return {
-      type: 'number-game' as const,
-      props: { maxNumber: 12 }
-    }
-  }
-  
-  // 钱币
-  if (slug === 'g1-money') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'mixed' as const, maxNumber: 100 }
-    }
-  }
-  
-  // 线段
-  if (slug === 'g2-line-segment') {
-    return {
-      type: 'math-practice' as const,
-      props: { operation: 'add' as const, maxNumber: 100 }
-    }
-  }
-  
+
   // ========== 默认 ==========
   if (gradeId <= 2) {
-    return {
-      type: 'number-game' as const,
-      props: { maxNumber: gradeId === 1 ? 20 : 100 }
-    }
+    return { type: 'number-game', props: { maxNumber: gradeId === 1 ? 20 : 100 } }
   }
-  
-  return {
-    type: 'math-practice' as const,
-    props: { operation: 'mixed' as const, maxNumber: 100 }
-  }
+
+  return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
 }
 
 export default function TopicPageClient() {
@@ -295,8 +180,7 @@ export default function TopicPageClient() {
             <h1 className="text-3xl font-extrabold text-slate-800">{topic.title}</h1>
           </div>
           <p className="mt-2 text-lg text-slate-600">{topic.desc}</p>
-          
-          {/* 教材原文入口 */}
+
           {topic.textbookContent && (
             <Link
               href={`/textbook/${slug}`}
@@ -317,21 +201,101 @@ export default function TopicPageClient() {
               边玩边学
             </span>
           </div>
-          
+
           {interactiveConfig.type === 'number-game' && (
             <NumberCardGame maxNumber={interactiveConfig.props.maxNumber} />
           )}
-          
+
           {interactiveConfig.type === 'math-practice' && (
-            <MathPractice 
-              operation={interactiveConfig.props.operation} 
+            <MathPractice
+              operation={interactiveConfig.props.operation}
               maxNumber={interactiveConfig.props.maxNumber}
             />
           )}
-          
+
           {interactiveConfig.type === 'perimeter' && (
             <PerimeterPractice shape={interactiveConfig.props.shape} />
           )}
+
+          {interactiveConfig.type === 'shape-explorer' && (
+            <ShapeExplorer grade={interactiveConfig.props.grade} />
+          )}
+
+          {interactiveConfig.type === 'clock-learning' && (
+            <ClockLearning />
+          )}
+
+          {interactiveConfig.type === 'money-calculator' && (
+            <MoneyCalculator maxAmount={interactiveConfig.props.maxAmount} />
+          )}
+        </section>
+
+        {/* ===== 练习题区域 ===== */}
+        <section className="mb-8">
+          <div className="mb-4 flex items-center gap-2">
+            <Calculator className="h-6 w-6 text-emerald-600" />
+            <h2 className="text-xl font-bold text-slate-800">📝 配套练习题</h2>
+          </div>
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-lg">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-emerald-700">完成以下练习题巩固知识点</p>
+              <Link
+                href="/practice"
+                className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-600"
+              >
+                更多练习
+              </Link>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Link
+                href={`/practice?topic=${slug}&mode=smart`}
+                className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-lg">🧠</span>
+                <div>
+                  <p className="font-bold text-emerald-800">智能练习</p>
+                  <p className="text-xs text-emerald-600">AI根据你的水平出题</p>
+                </div>
+              </Link>
+              <Link
+                href={`/practice?topic=${slug}&mode=custom`}
+                className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-lg">⚙️</span>
+                <div>
+                  <p className="font-bold text-blue-800">自定义练习</p>
+                  <p className="text-xs text-blue-600">选择难度和题量</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== 学习技巧区域 ===== */}
+        <section className="mb-8">
+          <div className="mb-4 flex items-center gap-2">
+            <BookMarked className="h-6 w-6 text-amber-600" />
+            <h2 className="text-xl font-bold text-slate-800">💡 学习技巧与理解方法</h2>
+          </div>
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-lg">
+            <div className="space-y-4">
+              {topic.tips.map((tip, i) => (
+                <div key={i} className="flex items-start gap-3 rounded-xl bg-white p-4 shadow-sm">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-200 text-sm font-bold text-amber-700">
+                    {i + 1}
+                  </span>
+                  <p className="text-amber-800">{tip}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 rounded-xl bg-amber-100/50 p-4">
+              <p className="text-sm font-bold text-amber-700">🎯 学习建议：</p>
+              <p className="mt-1 text-sm text-amber-600">
+                先通过上面的"互动学习"熟悉概念，然后做"配套练习题"巩固，
+                最后查看"常见错误"避免踩坑。每天坚持练习10-15分钟效果最好！
+              </p>
+            </div>
+          </div>
         </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -365,20 +329,6 @@ export default function TopicPageClient() {
                 </div>
               </div>
             )}
-
-            <div className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-md">
-              <div className="mb-3 flex items-center gap-2 font-bold text-sky-700">
-                <Lightbulb className="h-5 w-5" />
-                学习技巧
-              </div>
-              <ul className="space-y-2">
-                {topic.tips.map((tip, i) => (
-                  <li key={i} className="text-sm text-sky-700">
-                    💡 {tip}
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
 
           <div className="space-y-6">

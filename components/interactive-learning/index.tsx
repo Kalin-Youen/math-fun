@@ -1,3 +1,6 @@
 export { default as NumberCardGame } from './NumberCardGame'
 export { default as MathPractice } from './MathPractice'
 export { default as PerimeterPractice } from './PerimeterPractice'
+export { default as ShapeExplorer } from './ShapeExplorer'
+export { default as ClockLearning } from './ClockLearning'
+export { default as MoneyCalculator } from './MoneyCalculator'
