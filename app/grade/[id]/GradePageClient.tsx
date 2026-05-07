@@ -16,8 +16,8 @@ export default function GradePageClient() {
         <div className="mx-auto max-w-4xl px-6 py-20 text-center">
           <div className="text-6xl mb-4">🤔</div>
           <h1 className="text-2xl font-bold text-slate-800 mb-4">找不到这个年级</h1>
-          <Link href="/knowledge-map" className="rounded-full bg-indigo-500 px-6 py-2 text-white font-bold shadow">
-            返回知识地图
+          <Link href="/" className="rounded-full bg-indigo-500 px-6 py-2 text-white font-bold shadow">
+            返回首页
           </Link>
         </div>
       </main>
@@ -33,11 +33,11 @@ export default function GradePageClient() {
       <div className="mx-auto max-w-5xl px-6 py-10">
         <div className="mb-6 flex items-center gap-3">
           <Link
-            href="/knowledge-map"
+            href="/"
             className="inline-flex items-center gap-1 rounded-full bg-white/70 px-4 py-1.5 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-white"
           >
             <ArrowLeft className="h-4 w-4" />
-            知识地图
+            首页
           </Link>
           <Link
             href="/"
