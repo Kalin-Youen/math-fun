@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Calculator, Grid3X3, Sparkles, BookOpen, Clock, MessageCircle, Printer, Trophy, PenTool, Search, GitBranch, Brain, Lightbulb, Ruler, BarChart3, Calendar, BookX, Layers, Zap, Star, Target, AlertTriangle, PieChart } from 'lucide-react'
+import { Calculator, Grid3X3, Sparkles, BookOpen, Clock, MessageCircle, Printer, Trophy, PenTool, Search, GitBranch, Brain, Lightbulb, Ruler, BarChart3, Calendar, BookX, Layers, Zap, Star, Target, AlertTriangle, PieChart, ArrowRight, Sparkles as SparkleIcon, Crown, Rocket, BookMarked, GraduationCap, Timer, TrendingUp } from 'lucide-react'
 import { useAchievements } from '@/lib/achievements'
 import { useUserProfile, getLevelTitle, getLevelColor } from '@/lib/user-profile'
 import { getTodayStats, getStreakDays } from '@/lib/storage'
@@ -15,6 +15,7 @@ interface ModuleType {
   emoji: string
   bg: string
   xpReward?: number
+  badge?: string
 }
 
 const coreModules: ModuleType[] = [
@@ -27,6 +28,7 @@ const coreModules: ModuleType[] = [
     emoji: '⚡',
     bg: 'bg-gradient-to-br from-orange-50 via-pink-50 to-rose-50',
     xpReward: 15,
+    badge: '热门',
   },
   {
     title: '九九乘法表',
@@ -37,6 +39,7 @@ const coreModules: ModuleType[] = [
     emoji: '✖️',
     bg: 'bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50',
     xpReward: 10,
+    badge: '必学',
   },
   {
     title: '趣味数学',
@@ -57,6 +60,7 @@ const coreModules: ModuleType[] = [
     emoji: '📖',
     bg: 'bg-gradient-to-br from-rose-50 via-pink-50 to-red-50',
     xpReward: 20,
+    badge: '难点',
   },
 ]
 
@@ -195,6 +199,7 @@ const learningModules: ModuleType[] = [
     gradient: 'from-green-400 via-emerald-500 to-teal-500',
     emoji: '📅',
     bg: 'bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50',
+    badge: '推荐',
   },
   {
     title: '错题本',
@@ -218,33 +223,65 @@ const learningModules: ModuleType[] = [
 
 const resourceModules: ModuleType[] = [
   {
-    title: '开源资源库',
-    desc: 'GitHub教材、练习题、视频课程',
-    icon: BookOpen,
-    href: '/resources',
+    title: '学习技巧库',
+    desc: '全网精选学习方法和记忆技巧',
+    icon: GraduationCap,
+    href: '/learning-tips',
     gradient: 'from-violet-400 via-purple-500 to-fuchsia-500',
-    emoji: '📚',
+    emoji: '🎓',
     bg: 'bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50',
+    badge: '新',
+  },
+  {
+    title: '知识地图',
+    desc: '1-6年级数学知识点全景图',
+    icon: Map,
+    href: '/knowledge-map',
+    gradient: 'from-cyan-400 via-sky-500 to-blue-500',
+    emoji: '🗺️',
+    bg: 'bg-gradient-to-br from-cyan-50 via-sky-50 to-blue-50',
   },
 ]
+
+// 添加 Map icon
+const Map = Sparkles
 
 function ModuleCard({ module }: { module: ModuleType }) {
   const Icon = module.icon
   return (
     <Link href={module.href} className="group block h-full">
-      <div className={`relative h-full overflow-hidden rounded-2xl ${module.bg} p-4 shadow-md transition-all duration-200 hover:shadow-lg hover:-translate-y-1`}>
-        <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/30 blur-xl" />
-        <div className="relative">
-          <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${module.gradient} text-white shadow-sm`}>
-            <Icon className="h-5 w-5" />
+      <div className={`relative h-full overflow-hidden rounded-2xl ${module.bg} p-4 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02]`}>
+        {/* 装饰光斑 */}
+        <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-white/40 to-white/10 blur-2xl transition-all duration-300 group-hover:scale-150" />
+        
+        {/* 标签 */}
+        {module.badge && (
+          <div className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+            module.badge === '热门' ? 'bg-orange-100 text-orange-600' :
+            module.badge === '必学' ? 'bg-emerald-100 text-emerald-600' :
+            module.badge === '难点' ? 'bg-rose-100 text-rose-600' :
+            module.badge === '推荐' ? 'bg-green-100 text-green-600' :
+            'bg-violet-100 text-violet-600'
+          }`}>
+            {module.badge}
           </div>
-          <div className="mb-1 text-xl">{module.emoji}</div>
-          <h3 className="mb-1 text-sm font-bold text-slate-800">{module.title}</h3>
-          <p className="text-xs text-slate-500">{module.desc}</p>
+        )}
+        
+        <div className="relative">
+          {/* 图标 */}
+          <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${module.gradient} text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+            <Icon className="h-6 w-6" />
+          </div>
+          
+          {/* 标题 */}
+          <h3 className="mb-1 text-base font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{module.title}</h3>
+          <p className="text-sm text-slate-500 leading-relaxed">{module.desc}</p>
+          
+          {/* XP 奖励 */}
           {'xpReward' in module && (
-            <div className="mt-2 flex items-center gap-1 text-xs font-medium text-amber-600">
-              <Star className="h-3 w-3 fill-amber-500" />
-              +{module.xpReward} XP
+            <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-amber-600">
+              <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+              <span>+{module.xpReward} XP</span>
             </div>
           )}
         </div>
@@ -253,16 +290,36 @@ function ModuleCard({ module }: { module: ModuleType }) {
   )
 }
 
-function SectionTitle({ emoji, title }: { emoji: string; title: string }) {
+function SectionTitle({ emoji, title, subtitle }: { emoji: string; title: string; subtitle?: string }) {
   return (
-    <div className="mb-4">
-      <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800">
-        <span className="text-xl">{emoji}</span>
-        {title}
-      </h2>
+    <div className="mb-5 flex items-end justify-between">
+      <div>
+        <h2 className="flex items-center gap-2 text-xl font-bold text-slate-800">
+          <span className="text-2xl">{emoji}</span>
+          {title}
+        </h2>
+        {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
+      </div>
+      <ArrowRight className="h-5 w-5 text-slate-300" />
     </div>
   )
 }
+
+// 学习技巧数据
+const learningTips = [
+  { icon: Timer, title: '番茄工作法', desc: '25分钟专注学习，5分钟休息' },
+  { icon: TrendingUp, title: '循序渐进', desc: '从简单到复杂，稳步提升' },
+  { icon: SparkleIcon, title: '费曼学习法', desc: '学会后讲给别人听' },
+  { icon: Crown, title: '目标激励', desc: '设定小目标，完成后奖励自己' },
+]
+
+// 统计数据
+const stats = [
+  { value: '92+', label: '知识点' },
+  { value: '22', label: '学习模块' },
+  { value: '500+', label: '练习题' },
+  { value: '∞', label: '学习乐趣' },
+]
 
 export default function HomePage() {
   const { achievements, unlockedCount } = useAchievements()
@@ -271,65 +328,102 @@ export default function HomePage() {
   const streakDays = getStreakDays()
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 px-4 pb-8 pt-12 text-white">
-        <div className="mx-auto max-w-6xl">
-          {/* 用户状态栏 */}
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Hero Section - 优化布局 */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 px-4 pt-10 pb-16 text-white">
+        {/* 背景装饰 */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-20 -right-20 h-80 w-80 rounded-full bg-pink-400/20 blur-3xl" />
+          <div className="absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-400/10 blur-3xl" />
+        </div>
+        
+        <div className="relative mx-auto max-w-6xl">
+          {/* 用户状态栏 - 卡片式设计 */}
           {isLoaded && (
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white/20 p-3 backdrop-blur-sm">
-              <div className="flex items-center gap-2">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${getLevelColor(profile.level.level)} text-lg`}>
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white/15 p-4 backdrop-blur-md border border-white/20">
+              <div className="flex items-center gap-3">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${getLevelColor(profile.level.level)} text-2xl shadow-lg`}>
                   {profile.avatar}
                 </div>
                 <div>
-                  <div className="font-bold">{profile.name}</div>
-                  <div className="text-xs opacity-80">{getLevelTitle(profile.level.level)}</div>
+                  <div className="text-lg font-bold">{profile.name}</div>
+                  <div className="flex items-center gap-2 text-sm opacity-90">
+                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs">{getLevelTitle(profile.level.level)}</span>
+                    <span>等级 {profile.level.level}</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-6">
                 <div className="text-center">
-                  <div className="font-bold">{profile.level.level}</div>
-                  <div className="text-xs opacity-70">等级</div>
+                  <div className="text-2xl font-bold">{streakDays}</div>
+                  <div className="text-xs opacity-80">🔥 连续打卡</div>
                 </div>
+                <div className="h-10 w-px bg-white/30" />
                 <div className="text-center">
-                  <div className="font-bold">{streakDays}</div>
-                  <div className="text-xs opacity-70">连续打卡</div>
+                  <div className="text-2xl font-bold">{todayStats.questionsDone}</div>
+                  <div className="text-xs opacity-80">📝 今日做题</div>
                 </div>
+                <div className="h-10 w-px bg-white/30" />
                 <div className="text-center">
-                  <div className="font-bold">{todayStats.questionsDone}</div>
-                  <div className="text-xs opacity-70">今日做题</div>
+                  <div className="text-2xl font-bold">{profile.level.xp}</div>
+                  <div className="text-xs opacity-80">⭐ 总经验值</div>
                 </div>
               </div>
             </div>
           )}
           
-          {/* 欢迎标题 */}
+          {/* 主标题区域 */}
           <div className="text-center">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm">
-              <Star className="h-4 w-4 fill-yellow-300" />
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-sm backdrop-blur-sm">
+              <Rocket className="h-4 w-4" />
               小学数学乐园
             </div>
-            <h1 className="mb-3 text-3xl font-bold sm:text-4xl">
-              让数学学习变得有趣又高效
+            <h1 className="mb-4 text-4xl font-bold sm:text-5xl">
+              让数学学习变得
+              <span className="bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent"> 有趣又高效</span>
             </h1>
-            <p className="mx-auto max-w-xl text-sm opacity-90">
-              覆盖小学1-6年级全部知识点，通过游戏化练习、可视化演示和智能错题本，帮助孩子建立扎实的数学基础
+            <p className="mx-auto mb-8 max-w-2xl text-base opacity-95 leading-relaxed">
+              覆盖小学1-6年级全部知识点，通过游戏化练习、可视化演示和智能学习系统，帮助孩子建立扎实的数学基础
             </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs">
-              <span className="rounded-full bg-white/20 px-3 py-1">92个知识点</span>
-              <span className="rounded-full bg-white/20 px-3 py-1">22个学习模块</span>
-              <span className="rounded-full bg-white/20 px-3 py-1">20个成就徽章</span>
+            
+            {/* 统计数据 */}
+            <div className="grid grid-cols-4 gap-4 sm:gap-8">
+              {stats.map((stat, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-2xl font-bold sm:text-3xl">{stat.value}</div>
+                  <div className="text-xs opacity-80 sm:text-sm">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* 核心功能模块 */}
-      <section className="px-4 py-6">
+      {/* 学习技巧提示条 */}
+      <section className="px-4 -mt-6 relative z-10">
         <div className="mx-auto max-w-6xl">
-          <SectionTitle emoji="🎯" title="核心训练" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex flex-wrap justify-center gap-3">
+            {learningTips.map((tip, i) => {
+              const Icon = tip.icon
+              return (
+                <Link key={i} href="/learning-tips" className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl">
+                  <Icon className="h-4 w-4 text-indigo-500" />
+                  <span>{tip.title}</span>
+                  <span className="text-slate-400">·</span>
+                  <span className="text-slate-500">{tip.desc}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 核心功能模块 */}
+      <section className="px-4 py-8">
+        <div className="mx-auto max-w-6xl">
+          <SectionTitle emoji="🎯" title="核心训练" subtitle="提升计算能力和解题技巧" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {coreModules.map((m) => (
               <ModuleCard key={m.href} module={m} />
             ))}
@@ -337,11 +431,34 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 学习技巧入口 */}
+      <section className="px-4 py-6">
+        <div className="mx-auto max-w-6xl">
+          <Link href="/learning-tips" className="group block overflow-hidden rounded-3xl bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 p-6 text-white shadow-xl transition-all hover:shadow-2xl hover:-translate-y-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-3xl">
+                  🎓
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">学习技巧库</h3>
+                  <p className="text-sm opacity-90">费曼学习法、记忆宫殿、番茄工作法...</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-medium transition-transform group-hover:translate-x-2">
+                查看全部
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            </div>
+          </Link>
+        </div>
+      </section>
+
       {/* 过程模块 */}
       <section className="px-4 py-6">
         <div className="mx-auto max-w-6xl">
-          <SectionTitle emoji="🧩" title="解题过程" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <SectionTitle emoji="🧩" title="解题过程" subtitle="培养良好的解题习惯" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {processModules.map((m) => (
               <ModuleCard key={m.href} module={m} />
             ))}
@@ -352,8 +469,8 @@ export default function HomePage() {
       {/* 概念理解 */}
       <section className="px-4 py-6">
         <div className="mx-auto max-w-6xl">
-          <SectionTitle emoji="💡" title="概念理解" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <SectionTitle emoji="💡" title="概念理解" subtitle="打好数学思维基础" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {conceptModules.map((m) => (
               <ModuleCard key={m.href} module={m} />
             ))}
@@ -364,8 +481,8 @@ export default function HomePage() {
       {/* 可视化工具 */}
       <section className="px-4 py-6">
         <div className="mx-auto max-w-6xl">
-          <SectionTitle emoji="🔧" title="可视化工具" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <SectionTitle emoji="🔧" title="可视化工具" subtitle="让抽象概念变得直观" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {toolModules.map((m) => (
               <ModuleCard key={m.href} module={m} />
             ))}
@@ -376,8 +493,8 @@ export default function HomePage() {
       {/* 学习管理 */}
       <section className="px-4 py-6">
         <div className="mx-auto max-w-6xl">
-          <SectionTitle emoji="📊" title="学习管理" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <SectionTitle emoji="📊" title="学习管理" subtitle="科学追踪学习进度" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {learningModules.map((m) => (
               <ModuleCard key={m.href} module={m} />
             ))}
@@ -388,8 +505,8 @@ export default function HomePage() {
       {/* 开源资源 */}
       <section className="px-4 py-6">
         <div className="mx-auto max-w-6xl">
-          <SectionTitle emoji="📚" title="开源资源" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <SectionTitle emoji="📚" title="拓展资源" subtitle="更多学习内容等你探索" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {resourceModules.map((m) => (
               <ModuleCard key={m.href} module={m} />
             ))}
@@ -399,23 +516,27 @@ export default function HomePage() {
 
       {/* 成就展示 */}
       {unlockedCount > 0 && (
-        <section className="px-4 py-6">
+        <section className="px-4 py-8">
           <div className="mx-auto max-w-6xl">
-            <div className="rounded-2xl bg-white p-4 shadow-md">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 font-bold text-slate-700">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
-                  我的成就 ({unlockedCount}/{achievements.length})
-                </h2>
-                <Link href="/dashboard" className="text-sm text-indigo-600">
-                  查看全部 →
-                </Link>
+            <div className="overflow-hidden rounded-2xl bg-white shadow-xl">
+              <div className="bg-gradient-to-r from-amber-400 to-orange-500 p-4">
+                <div className="flex items-center justify-between text-white">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-6 w-6" />
+                    <h2 className="text-lg font-bold">我的成就</h2>
+                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-sm">{unlockedCount}/{achievements.length}</span>
+                  </div>
+                  <Link href="/dashboard" className="text-sm font-medium underline underline-offset-2">
+                    查看全部 →
+                  </Link>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {achievements.filter(a => a.unlocked).slice(0, 6).map((a) => (
-                  <span key={a.id} className="rounded-full bg-yellow-100 px-3 py-1 text-sm text-yellow-700">
-                    {a.emoji} {a.title}
-                  </span>
+              <div className="flex flex-wrap gap-3 p-4">
+                {achievements.filter(a => a.unlocked).slice(0, 8).map((a) => (
+                  <div key={a.id} className="flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-2 shadow-sm">
+                    <span className="text-xl">{a.emoji}</span>
+                    <span className="text-sm font-medium text-slate-700">{a.title}</span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -424,8 +545,21 @@ export default function HomePage() {
       )}
 
       {/* 页脚 */}
-      <footer className="px-4 py-8 text-center text-slate-500">
-        <p className="text-sm">数学乐园 · 让每个孩子都能爱上数学</p>
+      <footer className="bg-gradient-to-r from-slate-800 to-slate-900 px-4 py-10 text-white">
+        <div className="mx-auto max-w-6xl text-center">
+          <div className="mb-4 text-2xl font-bold">🏆 小学数学乐园</div>
+          <p className="mb-4 text-sm text-slate-400">让每个孩子都能爱上数学</p>
+          <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-500">
+            <Link href="/knowledge-map" className="hover:text-white transition-colors">知识地图</Link>
+            <span>·</span>
+            <Link href="/dashboard" className="hover:text-white transition-colors">学习报告</Link>
+            <span>·</span>
+            <Link href="/resources" className="hover:text-white transition-colors">开源资源</Link>
+          </div>
+          <div className="mt-6 text-xs text-slate-600">
+            Built with ❤️ for Chinese elementary students
+          </div>
+        </div>
       </footer>
     </main>
   )
