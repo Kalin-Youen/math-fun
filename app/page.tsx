@@ -23,6 +23,17 @@ const MapIcon = Sparkles
 
 const coreModules: ModuleType[] = [
   {
+    title: '智能练习',
+    desc: '智能出题、错题重练、每日一练',
+    icon: Brain,
+    href: '/practice',
+    gradient: 'from-indigo-400 via-purple-500 to-pink-500',
+    emoji: '🧠',
+    bg: 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50',
+    xpReward: 20,
+    badge: 'NEW',
+  },
+  {
     title: '速算练习',
     desc: '加减乘除限时挑战，越算越快！',
     icon: Calculator,
