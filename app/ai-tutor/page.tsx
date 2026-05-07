@@ -1,50 +1,120 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ArrowLeft, Send, Bot, User, Sparkles, Lightbulb, RotateCcw, Copy, CheckCircle, Volume2, VolumeX, BookOpen, Calculator, HelpCircle } from 'lucide-react'
 import Link from 'next/link'
+import { 
+  ArrowLeft, 
+  Home, 
+  Send, 
+  Camera, 
+  Mic,
+  Volume2,
+  Brain,
+  Lightbulb,
+  Calculator,
+  BookOpen,
+  Sparkles,
+  Loader2,
+  Image as ImageIcon,
+  X,
+  CheckCircle2,
+  MessageCircle,
+  History,
+  Trash2,
+  Download
+} from 'lucide-react'
 
+// 消息类型
 interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
+  type: 'text' | 'image' | 'voice'
   timestamp: number
-  suggestions?: string[]
+  imageUrl?: string
+  isAnalyzing?: boolean
 }
 
-interface QuickQuestion {
-  icon: typeof Calculator
-  text: string
-  prompt: string
+// 解题步骤
+interface SolutionStep {
+  step: number
+  title: string
+  content: string
+  formula?: string
 }
 
-const quickQuestions: QuickQuestion[] = [
-  { icon: Calculator, text: '帮我解这道数学题', prompt: '请帮我解这道数学题，并详细解释每一步的思路：' },
-  { icon: BookOpen, text: '讲解这个知识点', prompt: '请用简单易懂的方式讲解这个数学知识点，适合小学生理解：' },
-  { icon: HelpCircle, text: '检查我的答案', prompt: '请检查我的答案是否正确，如果错了请指出错误并给出正确答案：' },
-  { icon: Lightbulb, text: '学习技巧建议', prompt: '请给我一些学习这个知识点的技巧和建议：' },
-]
-
-// 模拟 AI 回复
-const mockAIResponses: Record<string, string> = {
-  '乘法': '乘法是加法的简便运算。比如 3×4，就是 4 个 3 相加：3+3+3+3=12。\n\n💡 记忆技巧：\n• 可以画圆圈来理解，3×4 就是画 3 行，每行 4 个圆圈\n• 用乘法口诀快速计算\n• 交换律：3×4 = 4×3',
-  '除法': '除法是乘法的逆运算。比如 12÷3，就是想：3 乘几等于 12？\n\n💡 解题步骤：\n1. 想乘法口诀：三（ ）十二\n2. 三四十二，所以答案是 4\n3. 验算：3×4=12 ✓',
-  '应用题': '解应用题要遵循"读-审-列-算-查"五步法：\n\n1️⃣ 读题：仔细读两遍，圈出关键词\n2️⃣ 审题：确定已知条件和问题\n3️⃣ 列式：写出算式\n4️⃣ 计算：认真计算\n5️⃣ 检查：验算答案是否合理',
-  '分数': '分数表示一个整体被平均分成几份，取其中的几份。\n\n🍕 用披萨理解：\n• 分母（下面）：披萨被切成几块\n• 分子（上面）：你吃了几块\n\n比如 3/4，就是披萨切成 4 块，吃了 3 块',
-  '竖式': '竖式计算要注意三点：\n\n1. 相同数位对齐\n2. 从个位算起\n3. 满十进一，不够减向前借一\n\n✏️ 小提示：计算时可以在草稿纸上先算，再写到作业本上',
-}
-
-function getAIResponse(input: string): string {
-  const lowerInput = input.toLowerCase()
-  
-  for (const [keyword, response] of Object.entries(mockAIResponses)) {
-    if (lowerInput.includes(keyword)) {
-      return response
+// AI 响应模拟
+const mockAIResponse = (question: string, imageUploaded?: boolean): { content: string; steps?: SolutionStep[] } => {
+  // 根据问题内容返回不同的模拟响应
+  if (imageUploaded) {
+    return {
+      content: '我看到你上传了一道数学题。让我来帮你分析：',
+      steps: [
+        { step: 1, title: '识别题目', content: '这是一道关于加减法的应用题' },
+        { step: 2, title: '分析已知条件', content: '题目中给出了两个数量，需要求它们的和' },
+        { step: 3, title: '列出算式', content: '根据题意，我们可以列出：15 + 8 = ?', formula: '15 + 8 = 23' },
+        { step: 4, title: '计算结果', content: '15加8等于23，所以答案是23' },
+      ]
     }
   }
   
-  // 默认回复
-  return `我来帮你分析这个问题！\n\n根据你的描述，我建议：\n\n1️⃣ 先理解题目的意思，找出已知条件\n2️⃣ 确定需要用什么方法解决\n3️⃣ 一步一步仔细计算\n4️⃣ 做完后记得检查\n\n如果还有疑问，可以继续问我哦！💪`
+  if (question.includes('乘') || question.includes('×')) {
+    return {
+      content: '乘法是加法的简便运算。比如 3×4，表示4个3相加：',
+      steps: [
+        { step: 1, title: '理解乘法含义', content: '3×4 = 3 + 3 + 3 + 3' },
+        { step: 2, title: '逐步计算', content: '3+3=6，6+3=9，9+3=12' },
+        { step: 3, title: '得出答案', content: '所以 3×4 = 12', formula: '3 × 4 = 12' },
+      ]
+    }
+  }
+  
+  if (question.includes('除') || question.includes('÷')) {
+    return {
+      content: '除法是乘法的逆运算。比如 12÷3，就是想：3乘几等于12？',
+      steps: [
+        { step: 1, title: '理解除法含义', content: '12÷3 表示把12平均分成3份' },
+        { step: 2, title: '想乘法口诀', content: '三（ ）十二，三四十二！' },
+        { step: 3, title: '得出答案', content: '所以 12÷3 = 4', formula: '12 ÷ 3 = 4' },
+      ]
+    }
+  }
+  
+  if (question.includes('分数') || question.includes('/')) {
+    return {
+      content: '分数表示一个整体的一部分。比如 1/2 表示一半。',
+      steps: [
+        { step: 1, title: '理解分数', content: '分母表示平均分的份数，分子表示取的份数' },
+        { step: 2, title: '同分母加减', content: '分母不变，分子相加减' },
+        { step: 3, title: '举例', content: '1/4 + 2/4 = 3/4', formula: '¹/₄ + ²/₄ = ³/₄' },
+      ]
+    }
+  }
+  
+  // 默认响应
+  return {
+    content: '我来帮你解答这个问题。我们可以按照以下步骤：',
+    steps: [
+      { step: 1, title: '仔细读题', content: '先理解题目问的是什么，找出已知条件' },
+      { step: 2, title: '分析数量关系', content: '看看这些数量之间有什么关系' },
+      { step: 3, title: '选择方法', content: '根据数量关系选择合适的计算方法' },
+      { step: 4, title: '计算验证', content: '算出结果后，检查是否合理' },
+    ]
+  }
+}
+
+// 语音合成
+const speak = (text: string) => {
+  if ('speechSynthesis' in window) {
+    // 取消之前的语音
+    window.speechSynthesis.cancel()
+    
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'zh-CN'
+    utterance.rate = 0.9
+    utterance.pitch = 1
+    window.speechSynthesis.speak(utterance)
+  }
 }
 
 export default function AITutorPage() {
@@ -52,261 +122,370 @@ export default function AITutorPage() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: '你好！我是你的 AI 数学辅导老师 🎓\n\n我可以帮你：\n• 解答数学题\n• 讲解知识点\n• 检查作业\n• 提供学习建议\n\n有什么数学问题，随时问我！',
+      content: '你好！我是你的AI数学助手。你可以问我任何数学问题，或者拍照上传题目，我会一步步帮你解答！',
+      type: 'text',
       timestamp: Date.now(),
-      suggestions: ['乘法怎么理解？', '除法竖式怎么做？', '应用题解题技巧'],
-    },
+    }
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
-  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [isRecording, setIsRecording] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [showHistory, setShowHistory] = useState(false)
+  const [chatHistory, setChatHistory] = useState<{id: string; title: string; date: number}[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // 自动滚动到底部
   useEffect(() => {
-    scrollToBottom()
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
-
-  const speak = (text: string) => {
-    if ('speechSynthesis' in window && !isMuted) {
-      window.speechSynthesis.cancel()
-      const utterance = new SpeechSynthesisUtterance(text)
-      utterance.lang = 'zh-CN'
-      utterance.rate = 0.9
-      window.speechSynthesis.speak(utterance)
+  
+  // 加载历史记录
+  useEffect(() => {
+    const saved = localStorage.getItem('aiChatHistory')
+    if (saved) {
+      try {
+        setChatHistory(JSON.parse(saved))
+      } catch (e) {
+        console.error('加载历史失败')
+      }
     }
-  }
-
-  const sendMessage = async (content: string) => {
-    if (!content.trim()) return
-
+  }, [])
+  
+  // 发送消息
+  const sendMessage = async (content: string, type: 'text' | 'image' = 'text') => {
+    if (!content.trim() && !selectedImage) return
+    
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content,
+      content: content || '[图片]',
+      type,
       timestamp: Date.now(),
+      imageUrl: selectedImage || undefined,
     }
-
+    
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
-
-    // 模拟 AI 思考时间
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000))
-
-    const aiResponse = getAIResponse(content)
     
-    const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: aiResponse,
-      timestamp: Date.now(),
-      suggestions: ['还有疑问', '举个例子', '换种方式讲'],
+    // 模拟AI思考
+    setTimeout(() => {
+      const response = mockAIResponse(content, !!selectedImage)
+      
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response.content,
+        type: 'text',
+        timestamp: Date.now(),
+      }
+      
+      setMessages(prev => [...prev, aiMessage])
+      setIsLoading(false)
+      setSelectedImage(null)
+      
+      // 自动语音朗读
+      speak(response.content)
+      
+      // 保存到历史
+      saveToHistory(content || '图片问题')
+    }, 1500)
+  }
+  
+  // 保存到历史
+  const saveToHistory = (title: string) => {
+    const newHistory = [
+      { id: Date.now().toString(), title: title.slice(0, 20), date: Date.now() },
+      ...chatHistory.slice(0, 19)
+    ]
+    setChatHistory(newHistory)
+    localStorage.setItem('aiChatHistory', JSON.stringify(newHistory))
+  }
+  
+  // 处理图片上传
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string)
+      }
+      reader.readAsDataURL(file)
     }
-
-    setMessages(prev => [...prev, assistantMessage])
-    setIsLoading(false)
-    
-    // 自动朗读
-    speak(aiResponse)
   }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    sendMessage(input)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage(input)
+  
+  // 语音输入（模拟）
+  const toggleRecording = () => {
+    if (isRecording) {
+      setIsRecording(false)
+      // 模拟语音识别结果
+      setTimeout(() => {
+        setInput('3乘以4等于多少')
+      }, 500)
+    } else {
+      setIsRecording(true)
+      // 3秒后自动停止
+      setTimeout(() => {
+        setIsRecording(false)
+        setInput('3乘以4等于多少')
+      }, 3000)
     }
   }
-
-  const copyMessage = (content: string, id: string) => {
-    navigator.clipboard.writeText(content)
-    setCopiedId(id)
-    setTimeout(() => setCopiedId(null), 2000)
-  }
-
+  
+  // 清空对话
   const clearChat = () => {
-    setMessages([{
-      id: 'welcome',
-      role: 'assistant',
-      content: '对话已清空！有什么新的问题吗？🤔',
-      timestamp: Date.now(),
-    }])
+    if (confirm('确定要清空当前对话吗？')) {
+      setMessages([{
+        id: 'welcome',
+        role: 'assistant',
+        content: '你好！我是你的AI数学助手。你可以问我任何数学问题，或者拍照上传题目，我会一步步帮你解答！',
+        type: 'text',
+        timestamp: Date.now(),
+      }])
+    }
   }
-
+  
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      <div className="mx-auto flex h-screen max-w-4xl flex-col">
-        {/* 头部 */}
-        <header className="flex items-center justify-between border-b border-indigo-100 bg-white/80 px-4 py-3 backdrop-blur-xl">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition-colors hover:bg-indigo-200"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
-                <Bot className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="font-bold text-slate-800">AI 数学辅导</h1>
-                <p className="text-xs text-slate-500">随时解答你的数学问题</p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <header className="bg-white/80 backdrop-blur-md border-b border-white/50 sticky top-0 z-50">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                <ArrowLeft className="w-6 h-6 text-slate-600" />
+              </Link>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold text-slate-800">AI数学助手</h1>
+                  <p className="text-xs text-slate-500">拍照解题 · 语音讲解 · 智能分析</p>
+                </div>
               </div>
             </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                title="历史记录"
+              >
+                <History className="w-5 h-5 text-slate-600" />
+              </button>
+              <button
+                onClick={clearChat}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                title="清空对话"
+              >
+                <Trash2 className="w-5 h-5 text-slate-600" />
+              </button>
+              <Link href="/" className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                <Home className="w-5 h-5 text-slate-600" />
+              </Link>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsMuted(!isMuted)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors hover:bg-slate-200"
-            >
-              {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-            </button>
-            <button
-              onClick={clearChat}
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors hover:bg-slate-200"
-            >
-              <RotateCcw className="h-5 w-5" />
-            </button>
+        </div>
+      </header>
+      
+      <div className="flex max-w-6xl mx-auto">
+        {/* 历史记录侧边栏 */}
+        {showHistory && (
+          <div className="w-64 bg-white border-r border-slate-200 h-[calc(100vh-73px)] overflow-y-auto">
+            <div className="p-4 border-b border-slate-100">
+              <h3 className="font-bold text-slate-800">对话历史</h3>
+            </div>
+            {chatHistory.length === 0 ? (
+              <div className="p-4 text-center text-slate-400 text-sm">
+                暂无历史记录
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {chatHistory.map((chat) => (
+                  <button
+                    key={chat.id}
+                    className="w-full p-4 text-left hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="font-medium text-slate-700 text-sm truncate">
+                      {chat.title}
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      {new Date(chat.date).toLocaleDateString('zh-CN')}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        </header>
-
-        {/* 消息列表 */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="space-y-4">
-            {messages.map((message, index) => (
+        )}
+        
+        {/* 主聊天区域 */}
+        <main className="flex-1 flex flex-col h-[calc(100vh-73px)]">
+          {/* 消息列表 */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-3 animate-fade-in ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
-                style={{ animationDelay: `${index * 100}ms` }}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                {/* 头像 */}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                  message.role === 'user' 
-                    ? 'bg-gradient-to-br from-emerald-400 to-teal-500' 
-                    : 'bg-gradient-to-br from-indigo-500 to-purple-500'
-                } text-white`}>
-                  {message.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
-                </div>
-
-                {/* 消息内容 */}
                 <div className={`max-w-[80%] ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
-                  <div className={`rounded-2xl px-4 py-3 shadow-sm ${
-                    message.role === 'user'
-                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
-                      : 'bg-white text-slate-700'
-                  }`}>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
+                  {/* 头像 */}
+                  <div className="flex items-center gap-2 mb-1">
+                    {message.role === 'assistant' && (
+                      <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <Brain className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                    <span className="text-xs text-slate-400">
+                      {new Date(message.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
-
-                  {/* 操作按钮 */}
-                  {message.role === 'assistant' && (
-                    <div className="mt-1 flex items-center gap-1">
+                  
+                  {/* 消息内容 */}
+                  <div className={`rounded-2xl p-4 ${
+                    message.role === 'user'
+                      ? 'bg-indigo-500 text-white'
+                      : 'bg-white shadow-sm border border-slate-100'
+                  }`}>
+                    {/* 图片 */}
+                    {message.imageUrl && (
+                      <div className="mb-3">
+                        <img
+                          src={message.imageUrl}
+                          alt="上传的题目"
+                          className="max-w-full rounded-xl"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* 文字 */}
+                    <div className={`text-sm leading-relaxed ${message.role === 'user' ? 'text-white' : 'text-slate-700'}`}>
+                      {message.content}
+                    </div>
+                    
+                    {/* AI 语音播放按钮 */}
+                    {message.role === 'assistant' && (
                       <button
                         onClick={() => speak(message.content)}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-500"
+                        className="mt-2 flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-600"
                       >
-                        <Volume2 className="h-4 w-4" />
+                        <Volume2 className="w-3 h-3" />
+                        朗读
                       </button>
-                      <button
-                        onClick={() => copyMessage(message.content, message.id)}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-500"
-                      >
-                        {copiedId === message.id ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* 建议按钮 */}
-                  {message.suggestions && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {message.suggestions.map((suggestion, i) => (
-                        <button
-                          key={i}
-                          onClick={() => sendMessage(suggestion)}
-                          className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-200"
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
-
+            
             {/* 加载中 */}
             {isLoading && (
-              <div className="flex gap-3 animate-fade-in">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
-                  <Bot className="h-5 w-5" />
-                </div>
-                <div className="flex items-center gap-1 rounded-2xl bg-white px-4 py-3 shadow-sm">
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-400" style={{ animationDelay: '0ms' }} />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-400" style={{ animationDelay: '150ms' }} />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-400" style={{ animationDelay: '300ms' }} />
+              <div className="flex justify-start">
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
+                    <span className="text-sm text-slate-500">AI正在思考...</span>
+                  </div>
                 </div>
               </div>
             )}
-
+            
             <div ref={messagesEndRef} />
           </div>
-        </div>
-
-        {/* 快捷问题 */}
-        <div className="border-t border-indigo-100 bg-white/50 px-4 py-2">
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {quickQuestions.map((q, i) => {
-              const Icon = q.icon
-              return (
+          
+          {/* 输入区域 */}
+          <div className="p-4 bg-white border-t border-slate-200">
+            {/* 图片预览 */}
+            {selectedImage && (
+              <div className="mb-3 relative inline-block">
+                <img
+                  src={selectedImage}
+                  alt="预览"
+                  className="h-20 rounded-xl"
+                />
                 <button
-                  key={i}
-                  onClick={() => sendMessage(q.prompt)}
-                  className="flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-all hover:bg-indigo-50 hover:text-indigo-600"
+                  onClick={() => setSelectedImage(null)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                  {q.text}
+                  <X className="w-3 h-3" />
                 </button>
-              )
-            })}
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2">
+              {/* 拍照按钮 */}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                ref={fileInputRef}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="p-3 hover:bg-slate-100 rounded-xl transition-colors"
+                title="拍照/上传图片"
+              >
+                <Camera className="w-5 h-5 text-slate-600" />
+              </button>
+              
+              {/* 语音按钮 */}
+              <button
+                onClick={toggleRecording}
+                className={`p-3 rounded-xl transition-colors ${
+                  isRecording ? 'bg-red-100 text-red-500' : 'hover:bg-slate-100'
+                }`}
+                title="语音输入"
+              >
+                {isRecording ? (
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <span className="text-xs">录音中...</span>
+                  </div>
+                ) : (
+                  <Mic className="w-5 h-5 text-slate-600" />
+                )}
+              </button>
+              
+              {/* 输入框 */}
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage(input)}
+                  placeholder="输入数学问题，或拍照上传题目..."
+                  className="w-full px-4 py-3 bg-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              
+              {/* 发送按钮 */}
+              <button
+                onClick={() => sendMessage(input, selectedImage ? 'image' : 'text')}
+                disabled={isLoading || (!input.trim() && !selectedImage)}
+                className="p-3 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* 快捷问题 */}
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+              {['3×4怎么算', '12÷3等于几', '什么是分数', '如何解应用题'].map((q) => (
+                <button
+                  key={q}
+                  onClick={() => sendMessage(q)}
+                  className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm whitespace-nowrap hover:bg-slate-200 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* 输入框 */}
-        <form onSubmit={handleSubmit} className="border-t border-indigo-100 bg-white p-4">
-          <div className="flex gap-2">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="输入你的数学问题..."
-              className="flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
-              rows={2}
-            />
-            <button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
-            >
-              <Send className="h-5 w-5" />
-            </button>
-          </div>
-          <p className="mt-2 text-center text-xs text-slate-400">
-            💡 提示：可以拍照上传题目、语音输入，或点击上方快捷问题
-          </p>
-        </form>
+        </main>
       </div>
-    </main>
+    </div>
   )
 }
