@@ -15,6 +15,7 @@ import {
 import { useAchievements } from '@/lib/achievements'
 import { useUserProfile, getLevelTitle, getLevelColor } from '@/lib/user-profile'
 import { getTodayStats, getStreakDays } from '@/lib/storage'
+import { WelcomeLuoXiaoHei } from '@/components/LuoXiaoHei'
 
 // 年级数据
 const gradeData = [
@@ -181,6 +182,11 @@ export default function HomePage() {
       {/* 学习技巧提示条 */}
       <section className="px-4 -mt-6 relative z-10">
         <div className="mx-auto max-w-6xl">
+          {/* 罗小黑欢迎 */}
+          <div className="mb-6">
+            <WelcomeLuoXiaoHei />
+          </div>
+          
           <div className="flex flex-wrap justify-center gap-3">
             {learningTips.map((tip, i) => {
               const Icon = tip.icon
