@@ -7,7 +7,7 @@ import { getTopicBySlug } from '@/lib/curriculum'
 import { 
   NumberCardGame, MathPractice, PerimeterPractice, ShapeExplorer, 
   ClockLearning, MoneyCalculator, CompareGame, CarryAddition,
-  FeynmanTutor, FractionGame, EquationGame, PercentGame
+  FeynmanCoach, FractionGame, EquationGame, PercentGame
 } from '@/components/interactive-learning'
 
 type InteractiveConfig =
@@ -19,38 +19,47 @@ type InteractiveConfig =
   | { type: 'money-calculator'; props: { maxAmount: number } }
   | { type: 'compare-game'; props: Record<string, never> }
   | { type: 'carry-addition'; props: Record<string, never> }
-  | { type: 'feynman-tutor'; props: { topicSlug: string; topicTitle: string; gradeId: number } }
+  | { type: 'feynman-coach'; props: { topicSlug: string } }
   | { type: 'fraction-game'; props: Record<string, never> }
   | { type: 'equation-game'; props: Record<string, never> }
   | { type: 'percent-game'; props: Record<string, never> }
 
 // 根据知识点 slug 精确匹配交互组件
 const getInteractiveComponent = (slug: string, gradeId: number, topicTitle: string): InteractiveConfig => {
+  // 优先检查费曼学习数据
+  const feynmanSlugs = ['g1-1-20', 'g1-add-20', 'g1-sub-20', 'g1-compare', 'g1-shapes', 
+    'g1-clock', 'g1-money', 'g2-mul-table', 'g2-division', 'g2-angle',
+    'g3-fractions-intro', 'g3-perimeter', 'g3-area', 'g4-decimal-intro', 'g4-triangle',
+    'g5-equation-problems', 'g5-fraction-ops', 'g6-percent', 'g6-circle', 'g6-proportion']
+  if (feynmanSlugs.includes(slug)) {
+    return { type: 'feynman-coach', props: { topicSlug: slug } }
+  }
+  
   // ========== 一年级 ==========
-  if (slug === 'g1-1-20') return { type: 'number-game', props: { maxNumber: 20 } }
+  if (slug === 'g1-1-20') return { type: 'feynman-coach', props: { topicSlug: slug } }
   if (slug === 'g1-1-100') return { type: 'number-game', props: { maxNumber: 100 } }
-  if (slug === 'g1-compare') return { type: 'compare-game', props: {} }
+  if (slug === 'g1-compare') return { type: 'feynman-coach', props: { topicSlug: slug } }
   if (slug === 'g1-add-10') return { type: 'math-practice', props: { operation: 'add', maxNumber: 10 } }
   if (slug === 'g1-add-20-no-carry') return { type: 'math-practice', props: { operation: 'add', maxNumber: 20 } }
-  if (slug === 'g1-add-20') return { type: 'carry-addition', props: {} }
+  if (slug === 'g1-add-20') return { type: 'feynman-coach', props: { topicSlug: slug } }
   if (slug === 'g1-sub-20-no-borrow') return { type: 'math-practice', props: { operation: 'subtract', maxNumber: 20 } }
-  if (slug === 'g1-sub-20') return { type: 'math-practice', props: { operation: 'subtract', maxNumber: 20 } }
-  if (slug === 'g1-shapes' || slug === 'g1-plane-shapes') return { type: 'shape-explorer', props: { grade: gradeId } }
+  if (slug === 'g1-sub-20') return { type: 'feynman-coach', props: { topicSlug: slug } }
+  if (slug === 'g1-shapes' || slug === 'g1-plane-shapes') return { type: 'feynman-coach', props: { topicSlug: slug } }
   if (slug === 'g1-sort') return { type: 'number-game', props: { maxNumber: 20 } }
-  if (slug === 'g1-clock') return { type: 'clock-learning', props: {} }
-  if (slug === 'g1-money') return { type: 'money-calculator', props: { maxAmount: 20 } }
+  if (slug === 'g1-clock') return { type: 'feynman-coach', props: { topicSlug: slug } }
+  if (slug === 'g1-money') return { type: 'feynman-coach', props: { topicSlug: slug } }
   if (slug === 'g1-position') return { type: 'number-game', props: { maxNumber: 10 } }
-  if (slug === 'g1-math-fun') return { type: 'feynman-tutor', props: { topicSlug: slug, topicTitle, gradeId } }
+  if (slug === 'g1-math-fun') return { type: 'feynman-coach', props: { topicSlug: slug } }
 
   // ========== 二年级 ==========
   if (slug === 'g2-add-sub-100') return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
   if (slug === 'g2-mental-calc') return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
   if (slug === 'g2-mixed-ops') return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
-  if (slug === 'g2-mul-table') return { type: 'math-practice', props: { operation: 'multiply', maxNumber: 9 } }
-  if (slug === 'g2-division') return { type: 'math-practice', props: { operation: 'divide', maxNumber: 81 } }
+  if (slug === 'g2-mul-table') return { type: 'feynman-coach', props: { topicSlug: slug } }
+  if (slug === 'g2-division') return { type: 'feynman-coach', props: { topicSlug: slug } }
   if (slug === 'g2-length') return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
   if (slug === 'g2-mass') return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
-  if (slug === 'g2-angle') return { type: 'shape-explorer', props: { grade: gradeId } }
+  if (slug === 'g2-angle') return { type: 'feynman-coach', props: { topicSlug: slug } }
   if (slug === 'g2-observe') return { type: 'shape-explorer', props: { grade: gradeId } }
   if (slug === 'g2-line-segment') return { type: 'math-practice', props: { operation: 'add', maxNumber: 100 } }
   if (slug === 'g2-data-collect') return { type: 'number-game', props: { maxNumber: 50 } }
@@ -60,25 +69,25 @@ const getInteractiveComponent = (slug: string, gradeId: number, topicTitle: stri
   if (slug === 'g3-multi-digit-mul') return { type: 'math-practice', props: { operation: 'multiply', maxNumber: 100 } }
   if (slug === 'g3-two-digit-mul') return { type: 'math-practice', props: { operation: 'multiply', maxNumber: 100 } }
   if (slug === 'g3-division') return { type: 'math-practice', props: { operation: 'divide', maxNumber: 100 } }
-  if (slug === 'g3-fractions-intro') return { type: 'fraction-game', props: {} }
-  if (slug === 'g3-perimeter') return { type: 'perimeter', props: { shape: 'mixed' } }
-  if (slug === 'g3-area') return { type: 'perimeter', props: { shape: 'mixed' } }
+  if (slug === 'g3-fractions-intro') return { type: 'feynman-coach', props: { topicSlug: slug } }
+  if (slug === 'g3-perimeter') return { type: 'feynman-coach', props: { topicSlug: slug } }
+  if (slug === 'g3-area') return { type: 'feynman-coach', props: { topicSlug: slug } }
   if (slug === 'g3-time') return { type: 'clock-learning', props: {} }
 
   // ========== 四年级 ==========
   if (slug === 'g4-large-numbers') return { type: 'number-game', props: { maxNumber: 10000 } }
-  if (slug === 'g4-decimal-intro') return { type: 'math-practice', props: { operation: 'mixed', maxNumber: 100 } }
-  if (slug === 'g4-triangle') return { type: 'shape-explorer', props: { grade: gradeId } }
+  if (slug === 'g4-decimal-intro') return { type: 'feynman-coach', props: { topicSlug: slug } }
+  if (slug === 'g4-triangle') return { type: 'feynman-coach', props: { topicSlug: slug } }
 
   // ========== 五年级 ==========
-  if (slug === 'g5-equation-problems') return { type: 'equation-game', props: {} }
-  if (slug === 'g5-fraction-ops') return { type: 'fraction-game', props: {} }
+  if (slug === 'g5-equation-problems') return { type: 'feynman-coach', props: { topicSlug: slug } }
+  if (slug === 'g5-fraction-ops') return { type: 'feynman-coach', props: { topicSlug: slug } }
   if (slug === 'g5-polygon-area') return { type: 'perimeter', props: { shape: 'mixed' } }
 
   // ========== 六年级 ==========
-  if (slug === 'g6-percent') return { type: 'percent-game', props: {} }
-  if (slug === 'g6-circle') return { type: 'perimeter', props: { shape: 'mixed' } }
-  if (slug === 'g6-proportion') return { type: 'percent-game', props: {} }
+  if (slug === 'g6-percent') return { type: 'feynman-coach', props: { topicSlug: slug } }
+  if (slug === 'g6-circle') return { type: 'feynman-coach', props: { topicSlug: slug } }
+  if (slug === 'g6-proportion') return { type: 'feynman-coach', props: { topicSlug: slug } }
 
   // ========== 默认 ==========
   if (gradeId <= 2) return { type: 'number-game', props: { maxNumber: gradeId === 1 ? 20 : 100 } }
@@ -151,7 +160,7 @@ export default function TopicPageClient() {
           {config.type === 'money-calculator' && <MoneyCalculator maxAmount={config.props.maxAmount} />}
           {config.type === 'compare-game' && <CompareGame />}
           {config.type === 'carry-addition' && <CarryAddition />}
-          {config.type === 'feynman-tutor' && <FeynmanTutor topicSlug={config.props.topicSlug} topicTitle={config.props.topicTitle} gradeId={config.props.gradeId} />}
+          {config.type === 'feynman-coach' && <FeynmanCoach topicSlug={config.props.topicSlug} />}
           {config.type === 'fraction-game' && <FractionGame />}
           {config.type === 'equation-game' && <EquationGame />}
           {config.type === 'percent-game' && <PercentGame />}
