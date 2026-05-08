@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { Home, ArrowLeft, Lightbulb, AlertTriangle, BookOpen, BookText, Gamepad2, BookMarked, Calculator } from 'lucide-react'
 import { getTopicBySlug } from '@/lib/curriculum'
+import { feynmanTopics } from '@/lib/feynman-learning'
 import { 
   NumberCardGame, MathPractice, PerimeterPractice, ShapeExplorer, 
   ClockLearning, MoneyCalculator, CompareGame, CarryAddition,
@@ -144,26 +146,15 @@ export default function TopicPageClient() {
           )}
         </header>
 
-        {/* 交互式学习区域 */}
+        {/* 多方法学习区域 */}
         <section className="mb-8">
           <div className="mb-4 flex items-center gap-2">
             <Gamepad2 className="h-6 w-6 text-indigo-600" />
-            <h2 className="text-xl font-bold text-slate-800">🎯 互动学习</h2>
-            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-600">边玩边学</span>
+            <h2 className="text-xl font-bold text-slate-800">🎯 多方法学习</h2>
+            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-600">选择适合你的方式</span>
           </div>
 
-          {config.type === 'number-game' && <NumberCardGame maxNumber={config.props.maxNumber} />}
-          {config.type === 'math-practice' && <MathPractice operation={config.props.operation} maxNumber={config.props.maxNumber} />}
-          {config.type === 'perimeter' && <PerimeterPractice shape={config.props.shape} />}
-          {config.type === 'shape-explorer' && <ShapeExplorer grade={config.props.grade} />}
-          {config.type === 'clock-learning' && <ClockLearning />}
-          {config.type === 'money-calculator' && <MoneyCalculator maxAmount={config.props.maxAmount} />}
-          {config.type === 'compare-game' && <CompareGame />}
-          {config.type === 'carry-addition' && <CarryAddition />}
-          {config.type === 'feynman-coach' && <FeynmanCoach topicSlug={config.props.topicSlug} />}
-          {config.type === 'fraction-game' && <FractionGame />}
-          {config.type === 'equation-game' && <EquationGame />}
-          {config.type === 'percent-game' && <PercentGame />}
+          <MultiMethodLearning slug={slug} gradeId={grade.id} topicTitle={topic.title} />
         </section>
 
         {/* 练习题区域 */}
@@ -289,5 +280,212 @@ export default function TopicPageClient() {
         </div>
       </div>
     </main>
+  )
+}
+
+// ========== 多方法学习组件 ==========
+type MethodTab = {
+  id: string
+  label: string
+  emoji: string
+  desc: string
+  color: string
+}
+
+function MultiMethodLearning({ slug, gradeId, topicTitle }: { slug: string; gradeId: number; topicTitle: string }) {
+  const [activeTab, setActiveTab] = useState('feynman')
+  const config = getInteractiveComponent(slug, gradeId, topicTitle)
+  const hasFeynman = !!feynmanTopics[slug]
+
+  // 构建可用方法列表
+  const methods: MethodTab[] = []
+
+  if (hasFeynman) {
+    methods.push({ id: 'feynman', label: '费曼学习法', emoji: '🎓', desc: '老师引导，讲给别人听', color: 'from-violet-500 to-purple-500' })
+  }
+  if (config) {
+    const methodLabels: Record<string, { label: string; emoji: string; desc: string; color: string }> = {
+      'number-game': { label: '数字游戏', emoji: '🔢', desc: '看图选数字', color: 'from-indigo-500 to-blue-500' },
+      'math-practice': { label: '计算练习', emoji: '🧮', desc: '做题巩固', color: 'from-emerald-500 to-teal-500' },
+      'perimeter': { label: '图形计算', emoji: '📐', desc: '看图算周长面积', color: 'from-blue-500 to-indigo-500' },
+      'shape-explorer': { label: '图形探索', emoji: '🔷', desc: '认识各种图形', color: 'from-purple-500 to-pink-500' },
+      'clock-learning': { label: '认识钟表', emoji: '🕐', desc: '读出时间', color: 'from-amber-500 to-orange-500' },
+      'money-calculator': { label: '人民币计算', emoji: '💰', desc: '凑钱游戏', color: 'from-green-500 to-emerald-500' },
+      'compare-game': { label: '比较大小', emoji: '⚖️', desc: '谁大谁小', color: 'from-orange-500 to-red-500' },
+      'carry-addition': { label: '进位加法', emoji: '➕', desc: '竖式演示', color: 'from-blue-500 to-cyan-500' },
+      'fraction-game': { label: '分数认识', emoji: '🥧', desc: '涂色学分数', color: 'from-indigo-500 to-violet-500' },
+      'equation-game': { label: '解方程', emoji: '📐', desc: '求未知数', color: 'from-teal-500 to-cyan-500' },
+      'percent-game': { label: '百分数', emoji: '💯', desc: '百分数应用', color: 'from-rose-500 to-pink-500' },
+    }
+    const info = methodLabels[config.type]
+    if (info) {
+      methods.push({ id: 'interactive', label: info.label, emoji: info.emoji, desc: info.desc, color: info.color })
+    }
+  }
+  methods.push({ id: 'practice', label: '练习题', emoji: '📝', desc: '配套巩固练习', color: 'from-amber-500 to-yellow-500' })
+  methods.push({ id: 'tips', label: '学习技巧', emoji: '💡', desc: '方法与要点', color: 'from-sky-500 to-blue-500' })
+
+  // 默认选中第一个
+  const [initialized, setInitialized] = useState(false)
+  if (!initialized && methods.length > 0) {
+    setActiveTab(hasFeynman ? 'feynman' : methods[0].id)
+    setInitialized(true)
+  }
+
+  return (
+    <div>
+      {/* 方法选择 Tab */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {methods.map((m) => (
+          <button
+            key={m.id}
+            onClick={() => setActiveTab(m.id)}
+            className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold shadow-sm transition-all ${
+              activeTab === m.id
+                ? `bg-gradient-to-r ${m.color} text-white shadow-md scale-105`
+                : 'bg-white text-slate-600 hover:bg-slate-50 hover:shadow'
+            }`}
+          >
+            <span className="text-lg">{m.emoji}</span>
+            <span>{m.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* 方法描述 */}
+      <div className="mb-4 text-center">
+        <p className="text-sm text-slate-500">
+          {methods.find(m => m.id === activeTab)?.emoji}{' '}
+          {methods.find(m => m.id === activeTab)?.desc}
+        </p>
+      </div>
+
+      {/* 内容区域 */}
+      {activeTab === 'feynman' && hasFeynman && (
+        <FeynmanCoach topicSlug={slug} />
+      )}
+
+      {activeTab === 'interactive' && config && (
+        <>
+          {config.type === 'number-game' && <NumberCardGame maxNumber={config.props.maxNumber} />}
+          {config.type === 'math-practice' && <MathPractice operation={config.props.operation} maxNumber={config.props.maxNumber} />}
+          {config.type === 'perimeter' && <PerimeterPractice shape={config.props.shape} />}
+          {config.type === 'shape-explorer' && <ShapeExplorer grade={config.props.grade} />}
+          {config.type === 'clock-learning' && <ClockLearning />}
+          {config.type === 'money-calculator' && <MoneyCalculator maxAmount={config.props.maxAmount} />}
+          {config.type === 'compare-game' && <CompareGame />}
+          {config.type === 'carry-addition' && <CarryAddition />}
+          {config.type === 'fraction-game' && <FractionGame />}
+          {config.type === 'equation-game' && <EquationGame />}
+          {config.type === 'percent-game' && <PercentGame />}
+        </>
+      )}
+
+      {activeTab === 'practice' && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-lg">
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-emerald-700 font-bold">通过练习巩固知识点</p>
+            <Link href="/practice" className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-600">
+              更多练习
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Link href={`/practice?topic=${slug}&mode=smart`} className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-lg">🧠</span>
+              <div><p className="font-bold text-emerald-800">智能练习</p><p className="text-xs text-emerald-600">AI根据你的水平出题</p></div>
+            </Link>
+            <Link href={`/practice?topic=${slug}&mode=custom`} className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-lg">⚙️</span>
+              <div><p className="font-bold text-blue-800">自定义练习</p><p className="text-xs text-blue-600">选择难度和题量</p></div>
+            </Link>
+            <Link href={`/speed-calc`} className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-lg">⚡</span>
+              <div><p className="font-bold text-orange-800">速算挑战</p><p className="text-xs text-orange-600">限时计算比赛</p></div>
+            </Link>
+            <Link href={`/mistake-book`} className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-lg">📕</span>
+              <div><p className="font-bold text-red-800">错题本</p><p className="text-xs text-red-600">复习做错的题</p></div>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'tips' && (
+        <TipsPanel slug={slug} />
+      )}
+    </div>
+  )
+}
+
+// 学习技巧面板
+function TipsPanel({ slug }: { slug: string }) {
+  const data = getTopicBySlug(slug)
+  if (!data) return null
+  const { topic } = data
+
+  return (
+    <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-blue-50 p-6 shadow-lg">
+      {/* 学习流程建议 */}
+      <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
+        <h4 className="mb-3 font-bold text-sky-800">🗺️ 推荐学习流程</h4>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="rounded-full bg-violet-100 px-3 py-1 font-bold text-violet-700">1️⃣ 费曼学习</span>
+          <span className="text-slate-400">→</span>
+          <span className="rounded-full bg-indigo-100 px-3 py-1 font-bold text-indigo-700">2️⃣ 互动练习</span>
+          <span className="text-slate-400">→</span>
+          <span className="rounded-full bg-emerald-100 px-3 py-1 font-bold text-emerald-700">3️⃣ 做题巩固</span>
+          <span className="text-slate-400">→</span>
+          <span className="rounded-full bg-amber-100 px-3 py-1 font-bold text-amber-700">4️⃣ 查看技巧</span>
+        </div>
+      </div>
+
+      {/* 学习技巧 */}
+      <div className="mb-6">
+        <h4 className="mb-3 font-bold text-sky-800">💡 学习技巧</h4>
+        <div className="space-y-3">
+          {topic.tips.map((tip, i) => (
+            <div key={i} className="flex items-start gap-3 rounded-xl bg-white p-4 shadow-sm">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-200 text-sm font-bold text-amber-700">{i + 1}</span>
+              <p className="text-slate-700">{tip}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 核心要点 + 公式 */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-xl bg-white p-4 shadow-sm">
+          <h4 className="mb-2 font-bold text-emerald-700">📌 核心要点</h4>
+          <ul className="space-y-1">
+            {topic.keyPoints.map((kp, i) => (
+              <li key={i} className="text-sm text-slate-600">• {kp}</li>
+            ))}
+          </ul>
+        </div>
+        {topic.formulas && topic.formulas.length > 0 && (
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <h4 className="mb-2 font-bold text-amber-700">📐 公式</h4>
+            <div className="space-y-1">
+              {topic.formulas.map((f, i) => (
+                <div key={i} className="rounded bg-amber-50 p-2 font-mono text-sm text-amber-800">{f}</div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 常见错误 */}
+      <div className="mt-4 rounded-xl bg-white p-4 shadow-sm">
+        <h4 className="mb-2 font-bold text-rose-700">⚠️ 常见错误（注意避开！）</h4>
+        <div className="space-y-2">
+          {topic.commonMistakes.map((m, i) => (
+            <div key={i} className="flex items-start gap-2 text-sm">
+              <span className="shrink-0 text-rose-500">❌</span>
+              <span className="text-slate-600">{m}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
