@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 
-// 罗小黑角色类型
 export type LuoXiaoHeiType = 
   | 'default'   // 黑色 - 默认
   | 'teacher'   // 紫色 - 老师
@@ -25,28 +24,27 @@ interface LuoXiaoHeiProps {
   className?: string
 }
 
-// 颜色配置
-const colorConfig: Record<LuoXiaoHeiType, { primary: string; secondary: string; accent: string }> = {
-  default: { primary: '#2D2D2D', secondary: '#4A4A4A', accent: '#FFD700' },
-  teacher: { primary: '#7C3AED', secondary: '#A78BFA', accent: '#FBBF24' },
-  helper: { primary: '#3B82F6', secondary: '#60A5FA', accent: '#FCD34D' },
-  cheer: { primary: '#F97316', secondary: '#FB923C', accent: '#FDE047' },
-  think: { primary: '#22C55E', secondary: '#4ADE80', accent: '#FBBF24' },
-  success: { primary: '#EAB308', secondary: '#FACC15', accent: '#FEF08A' },
-  grade1: { primary: '#22C55E', secondary: '#4ADE80', accent: '#FBBF24' },
-  grade2: { primary: '#14B8A6', secondary: '#2DD4BF', accent: '#FCD34D' },
-  grade3: { primary: '#3B82F6', secondary: '#60A5FA', accent: '#FBBF24' },
-  grade4: { primary: '#8B5CF6', secondary: '#A78BFA', accent: '#FCD34D' },
-  grade5: { primary: '#EC4899', secondary: '#F472B6', accent: '#FBBF24' },
-  grade6: { primary: '#EF4444', secondary: '#F87171', accent: '#FDE047' },
+// 颜色配置 - 身体颜色可变，但耳朵内侧必须是标志性的绿色
+const colorConfig: Record<LuoXiaoHeiType, { body: string; eye: string; earInner: string; accent: string }> = {
+  default: { body: '#1a1a1a', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  teacher: { body: '#7C3AED', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  helper: { body: '#3B82F6', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  cheer: { body: '#F97316', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  think: { body: '#22C55E', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  success: { body: '#EAB308', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  grade1: { body: '#22C55E', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  grade2: { body: '#14B8A6', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  grade3: { body: '#3B82F6', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  grade4: { body: '#8B5CF6', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  grade5: { body: '#EC4899', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
+  grade6: { body: '#EF4444', eye: '#FFFFFF', earInner: '#7CB342', accent: '#5DADE2' },
 }
 
-// 尺寸配置
 const sizeConfig = {
-  sm: { width: 60, height: 60 },
-  md: { width: 100, height: 100 },
-  lg: { width: 150, height: 150 },
-  xl: { width: 200, height: 200 },
+  sm: { width: 50, height: 50 },
+  md: { width: 80, height: 80 },
+  lg: { width: 120, height: 120 },
+  xl: { width: 160, height: 160 },
 }
 
 export default function LuoXiaoHei({ 
@@ -56,82 +54,94 @@ export default function LuoXiaoHei({
   animate = true,
   className = ''
 }: LuoXiaoHeiProps) {
-  const [bounce, setBounce] = useState(false)
+  const [bobY, setBobY] = useState(0)
   const colors = colorConfig[type]
   const { width, height } = sizeConfig[size]
 
   useEffect(() => {
     if (animate) {
       const interval = setInterval(() => {
-        setBounce(b => !b)
-      }, 2000)
+        setBobY(prev => prev === 0 ? -3 : 0)
+      }, 1200)
       return () => clearInterval(interval)
     }
   }, [animate])
 
   return (
     <div className={`flex flex-col items-center ${className}`}>
-      {/* 罗小黑 SVG */}
       <div 
-        className={`transition-transform duration-300 ${bounce ? '-translate-y-2' : ''}`}
-        style={{ width, height }}
+        className="relative transition-transform duration-300 ease-in-out"
+        style={{ width, height, transform: `translateY(${bobY}px)` }}
       >
-        <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* 身体 */}
-          <ellipse cx="100" cy="130" rx="50" ry="45" fill={colors.primary}/>
+        <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          {/* ====== 罗小黑经典形象 ====== */}
           
-          {/* 头部 */}
-          <circle cx="100" cy="80" r="55" fill={colors.primary}/>
+          {/* 尾巴 - 细长弯曲 */}
+          <path 
+            d="M140 140 Q170 120 175 90 Q180 60 165 50" 
+            stroke={colors.body} 
+            strokeWidth="12" 
+            strokeLinecap="round"
+            fill="none"
+          />
           
-          {/* 耳朵 */}
-          <path d="M55 40 L45 10 L75 35 Z" fill={colors.primary}/>
-          <path d="M145 40 L155 10 L125 35 Z" fill={colors.primary}/>
-          <path d="M58 38 L52 18 L72 35 Z" fill={colors.secondary}/>
-          <path d="M142 38 L148 18 L128 35 Z" fill={colors.secondary}/>
+          {/* 身体 - 椭圆形，比头小 */}
+          <ellipse cx="100" cy="155" rx="40" ry="35" fill={colors.body} />
           
-          {/* 脸部白色区域 */}
-          <ellipse cx="100" cy="90" rx="35" ry="30" fill="white"/>
+          {/* 头部 - 圆形，大大的 */}
+          <circle cx="100" cy="95" r="55" fill={colors.body} />
           
-          {/* 眼睛 */}
-          <ellipse cx="80" cy="75" rx="12" ry="14" fill="white"/>
-          <ellipse cx="120" cy="75" rx="12" ry="14" fill="white"/>
-          <ellipse cx="82" cy="77" rx="6" ry="8" fill="#1a1a1a"/>
-          <ellipse cx="122" cy="77" rx="6" ry="8" fill="#1a1a1a"/>
-          <circle cx="84" cy="74" r="2" fill="white"/>
-          <circle cx="124" cy="74" r="2" fill="white"/>
+          {/* ====== 耳朵 - 罗小黑的标志性特征 ====== */}
+          {/* 左耳朵外轮廓 - 三角形 */}
+          <path d="M55 60 L45 20 L80 50 Z" fill={colors.body} />
+          {/* 左耳朵内侧 - 标志性的绿色！ */}
+          <path d="M58 55 L52 28 L72 50 Z" fill={colors.earInner} />
           
-          {/* 鼻子 */}
-          <ellipse cx="100" cy="95" rx="5" ry="4" fill="#FF6B6B"/>
+          {/* 右耳朵外轮廓 */}
+          <path d="M145 60 L155 20 L120 50 Z" fill={colors.body} />
+          {/* 右耳朵内侧 - 标志性的绿色！ */}
+          <path d="M142 55 L148 28 L128 50 Z" fill={colors.earInner} />
           
-          {/* 嘴巴 */}
-          <path d="M90 102 Q100 112 110 102" stroke="#1a1a1a" strokeWidth="2" fill="none" strokeLinecap="round"/>
+          {/* ====== 眼睛 - 罗小黑的灵魂 ====== */}
+          {/* 左眼白 - 大大的椭圆 */}
+          <ellipse cx="72" cy="90" rx="22" ry="26" fill={colors.eye} />
+          {/* 左眼珠 - 黑色圆形，稍微偏上 */}
+          <ellipse cx="74" cy="88" rx="10" ry="14" fill="#000000" />
+          {/* 左眼高光 - 让眼睛有神 */}
+          <circle cx="78" cy="82" r="5" fill="white" />
+          <circle cx="70" cy="92" r="2" fill="white" opacity="0.6" />
           
-          {/* 胡须 */}
-          <line x1="65" y1="90" x2="45" y2="85" stroke="#1a1a1a" strokeWidth="1.5"/>
-          <line x1="65" y1="95" x2="42" y2="95" stroke="#1a1a1a" strokeWidth="1.5"/>
-          <line x1="65" y1="100" x2="45" y2="105" stroke="#1a1a1a" strokeWidth="1.5"/>
-          <line x1="135" y1="90" x2="155" y2="85" stroke="#1a1a1a" strokeWidth="1.5"/>
-          <line x1="135" y1="95" x2="158" y2="95" stroke="#1a1a1a" strokeWidth="1.5"/>
-          <line x1="135" y1="100" x2="155" y2="105" stroke="#1a1a1a" strokeWidth="1.5"/>
+          {/* 右眼白 */}
+          <ellipse cx="128" cy="90" rx="22" ry="26" fill={colors.eye} />
+          {/* 右眼珠 */}
+          <ellipse cx="126" cy="88" rx="10" ry="14" fill="#000000" />
+          {/* 右眼高光 */}
+          <circle cx="130" cy="82" r="5" fill="white" />
+          <circle cx="122" cy="92" r="2" fill="white" opacity="0.6" />
           
-          {/* 尾巴 */}
-          <path d="M150 130 Q180 120 170 150 Q165 170 145 160" stroke={colors.primary} strokeWidth="12" fill="none" strokeLinecap="round"/>
+          {/* ====== 鼻子 - 小小的蓝色三角形 ====== */}
+          <path d="M94 115 L106 115 L100 123 Z" fill={colors.accent} />
           
-          {/* 前爪 */}
-          <ellipse cx="75" cy="165" rx="15" ry="10" fill={colors.primary}/>
-          <ellipse cx="125" cy="165" rx="15" ry="10" fill={colors.primary}/>
+          {/* ====== 嘴巴 - 小小的W形或一条线 ====== */}
+          <path 
+            d="M88 130 Q100 138 112 130" 
+            stroke="#000000" 
+            strokeWidth="2" 
+            fill="none" 
+            strokeLinecap="round"
+          />
           
-          {/* 爪子细节 */}
-          <circle cx="68" cy="168" r="3" fill={colors.secondary}/>
-          <circle cx="75" cy="170" r="3" fill={colors.secondary}/>
-          <circle cx="82" cy="168" r="3" fill={colors.secondary}/>
-          <circle cx="118" cy="168" r="3" fill={colors.secondary}/>
-          <circle cx="125" cy="170" r="3" fill={colors.secondary}/>
-          <circle cx="132" cy="168" r="3" fill={colors.secondary}/>
+          {/* ====== 腮红 - 淡淡的粉色 ====== */}
+          <ellipse cx="55" cy="105" rx="10" ry="6" fill="#FFB6C1" opacity="0.4" />
+          <ellipse cx="145" cy="105" rx="10" ry="6" fill="#FFB6C1" opacity="0.4" />
           
-          {/* 项圈 */}
-          <ellipse cx="100" cy="125" rx="25" ry="8" fill={colors.accent}/>
-          <circle cx="100" cy="128" r="6" fill={colors.accent} stroke="white" strokeWidth="2"/>
+          {/* 小手 */}
+          <ellipse cx="65" cy="165" rx="12" ry="8" fill={colors.body} />
+          <ellipse cx="135" cy="165" rx="12" ry="8" fill={colors.body} />
+          
+          {/* 小脚 */}
+          <ellipse cx="80" cy="185" rx="15" ry="8" fill={colors.body} />
+          <ellipse cx="120" cy="185" rx="15" ry="8" fill={colors.body} />
         </svg>
       </div>
       
@@ -141,8 +151,8 @@ export default function LuoXiaoHei({
           <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 
             border-l-8 border-r-8 border-b-8 
             border-l-transparent border-r-transparent border-b-white"/>
-          <div className="rounded-xl bg-white px-4 py-2 shadow-lg text-center">
-            <p className="text-sm text-slate-700">{message}</p>
+          <div className="rounded-2xl bg-white px-4 py-3 shadow-xl border-2 border-slate-100">
+            <p className="text-sm text-slate-700 font-medium text-center">{message}</p>
           </div>
         </div>
       )}
@@ -150,48 +160,39 @@ export default function LuoXiaoHei({
   )
 }
 
-// 罗小黑对话组件
-export function LuoXiaoHeiChat({ 
-  type = 'teacher',
-  messages,
-  currentStep = 0
-}: { 
-  type?: LuoXiaoHeiType
-  messages: string[]
-  currentStep?: number
-}) {
-  const [visible, setVisible] = useState(true)
-
-  useEffect(() => {
-    setVisible(true)
-  }, [currentStep])
-
-  if (!visible || !messages[currentStep]) return null
-
+// 简化版罗小黑 - 用于图标等小尺寸
+export function MiniLuoXiaoHei({ type = 'default' }: { type?: LuoXiaoHeiType }) {
+  const colors = colorConfig[type]
   return (
-    <div className="flex items-start gap-4 p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-white shadow-lg">
-      <LuoXiaoHei type={type} size="lg" animate />
-      <div className="flex-1">
-        <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100">
-          <p className="text-slate-700 leading-relaxed">{messages[currentStep]}</p>
-        </div>
-        <div className="flex gap-2 mt-2">
-          {messages.map((_, i) => (
-            <button
-              key={i}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === currentStep ? 'bg-violet-500 w-4' : 'bg-slate-300'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    <svg viewBox="0 0 50 50" className="w-full h-full">
+      {/* 身体 */}
+      <ellipse cx="25" cy="38" rx="10" ry="8" fill={colors.body} />
+      {/* 头 */}
+      <circle cx="25" cy="24" r="14" fill={colors.body} />
+      {/* 左耳外 */}
+      <path d="M14 16 L11 5 L20 14 Z" fill={colors.body} />
+      {/* 左耳内 - 绿色 */}
+      <path d="M15 15 L13 7 L19 13 Z" fill={colors.earInner} />
+      {/* 右耳外 */}
+      <path d="M36 16 L39 5 L30 14 Z" fill={colors.body} />
+      {/* 右耳内 - 绿色 */}
+      <path d="M35 15 L37 7 L31 13 Z" fill={colors.earInner} />
+      {/* 左眼 */}
+      <ellipse cx="19" cy="23" rx="5" ry="6" fill={colors.eye} />
+      <ellipse cx="20" cy="22" rx="2.5" ry="3.5" fill="#000" />
+      <circle cx="21" cy="20" r="1.2" fill="white" />
+      {/* 右眼 */}
+      <ellipse cx="31" cy="23" rx="5" ry="6" fill={colors.eye} />
+      <ellipse cx="30" cy="22" rx="2.5" ry="3.5" fill="#000" />
+      <circle cx="31" cy="20" r="1.2" fill="white" />
+      {/* 鼻子 */}
+      <path d="M23 29 L27 29 L25 32 Z" fill={colors.accent} />
+    </svg>
   )
 }
 
 // 浮动罗小黑助手
-export function FloatingLuoXiaoHei({ 
+export function FloatingLuoXiaoXiaoHei({ 
   type = 'helper',
   onClick,
   tooltip
@@ -204,18 +205,19 @@ export function FloatingLuoXiaoHei({
 
   return (
     <div 
-      className="fixed bottom-6 right-6 z-50 cursor-pointer"
+      className="fixed bottom-6 right-6 z-50 cursor-pointer group"
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
       onClick={onClick}
     >
       {showTooltip && tooltip && (
-        <div className="absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-lg bg-slate-800 px-3 py-2 text-sm text-white shadow-lg">
+        <div className="absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-xl bg-slate-800 px-4 py-2 text-sm text-white shadow-xl">
           {tooltip}
+          <div className="absolute -bottom-2 right-6 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-slate-800"/>
         </div>
       )}
-      <div className="rounded-full bg-white p-2 shadow-lg hover:shadow-xl transition-shadow">
-        <LuoXiaoHei type={type} size="sm" animate />
+      <div className="rounded-full bg-white p-2 shadow-xl hover:shadow-2xl transition-shadow group-hover:scale-110">
+        <LuoXiaoHei type={type} size="md" animate />
       </div>
     </div>
   )
@@ -235,30 +237,27 @@ export function WelcomeLuoXiaoHei({
   }
 
   const greetings = [
-    `你好呀，${userName}！我是罗小黑，今天一起学习吧！`,
-    `欢迎来到数学乐园！让我带你一起探索~`,
-    `学习是一件很有趣的事情哦，相信你一定可以！`,
+    `你好呀，${userName}！我是罗小黑，今天一起学习吧！🎉`,
+    `欢迎来到数学乐园！让我带你一起探索~ ✨`,
+    `学习是一件很有趣的事情哦，相信你一定可以！💪`,
   ]
 
   const [greetingIndex, setGreetingIndex] = useState(0)
 
   return (
-    <div className="flex items-center gap-6 p-6 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 shadow-lg">
+    <div className="flex items-center gap-6 p-6 rounded-3xl bg-gradient-to-r from-violet-50 to-purple-50 shadow-lg border border-violet-100">
       <LuoXiaoHei type={getGradeType()} size="xl" animate />
       <div className="flex-1">
-        <h3 className="text-xl font-bold text-violet-800 mb-2">
-          {greetings[greetingIndex]}
-        </h3>
-        <p className="text-slate-600 text-sm">
-          点击下方开始你的学习之旅吧！
-        </p>
-        <div className="flex gap-2 mt-3">
+        <div className="bg-white rounded-2xl p-4 shadow-sm mb-3">
+          <p className="text-lg text-slate-800 leading-relaxed">{greetings[greetingIndex]}</p>
+        </div>
+        <div className="flex gap-2">
           {greetings.map((_, i) => (
             <button
               key={i}
               onClick={() => setGreetingIndex(i)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === greetingIndex ? 'bg-violet-500 w-4' : 'bg-slate-300'
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                i === greetingIndex ? 'bg-violet-500 w-6' : 'bg-slate-300 hover:bg-slate-400'
               }`}
             />
           ))}
