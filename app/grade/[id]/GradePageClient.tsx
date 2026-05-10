@@ -14,7 +14,7 @@ const gradeQuickTools = [
   { title: '趣味游戏', emoji: '🎮', href: '/fun', desc: '数学游戏', icon: Gamepad2, color: 'from-emerald-400 to-teal-500' },
 ]
 
-// 年级对应的罗小黑类型
+// 年级对应的小猫类型
 const gradeLuoXiaoHeiType: Record<number, LuoXiaoHeiType> = {
   1: 'grade1',
   2: 'grade2',
@@ -24,14 +24,14 @@ const gradeLuoXiaoHeiType: Record<number, LuoXiaoHeiType> = {
   6: 'grade6',
 }
 
-// 年级对应的罗小黑问候语
+// 年级对应的小猫问候语
 const gradeGreetings: Record<number, string[]> = {
-  1: ['你好呀！我是绿色小黑，一年级的小朋友们准备好了吗？', '1-20的认识、加减法，让我们一起加油吧！'],
-  2: ['二年级的同学们好！我是青色小黑！', '乘法口诀、除法，这些都可以很简单的！'],
-  3: ['三年级的小朋友们好！我是蓝色小黑！', '多位数运算、分数、周长面积，我来带你学！'],
-  4: ['四年级的同学们好！我是紫色小黑！', '大数、小数、三角形，这些知识很有趣！'],
-  5: ['五年级的小朋友们好！我是粉色小黑！', '方程、分数运算，跟着我一起探索吧！'],
-  6: ['六年级的同学们好！我是红色小黑！', '百分数、圆、比例，冲刺阶段加油！'],
+  1: ['你好呀！我是绿色小猫，一年级的小朋友们准备好了吗？', '1-20的认识、加减法，让我们一起加油吧！'],
+  2: ['二年级的同学们好！我是青色小猫！', '乘法口诀、除法，这些都可以很简单的！'],
+  3: ['三年级的小朋友们好！我是蓝色小猫！', '多位数运算、分数、周长面积，我来带你学！'],
+  4: ['四年级的同学们好！我是紫色小猫！', '大数、小数、三角形，这些知识很有趣！'],
+  5: ['五年级的小朋友们好！我是粉色小猫！', '方程、分数运算，跟着我一起探索吧！'],
+  6: ['六年级的同学们好！我是红色小猫！', '百分数、圆、比例，冲刺阶段加油！'],
 }
 
 export default function GradePageClient() {
@@ -66,10 +66,10 @@ export default function GradePageClient() {
           </Link>
         </div>
 
-        {/* 年级头部 + 罗小黑 */}
+        {/* 年级头部 + 小猫 */}
         <header className={`mb-8 rounded-3xl border ${grade.borderColor} ${grade.bg} p-8 shadow-lg`}>
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            {/* 罗小黑 */}
+            {/* 小猫 */}
             <div className="shrink-0">
               <LuoXiaoHei type={luoType} size="lg" animate message={greetings[0]} />
             </div>

@@ -182,7 +182,7 @@ export default function HomePage() {
       {/* 学习技巧提示条 */}
       <section className="px-4 -mt-6 relative z-10">
         <div className="mx-auto max-w-6xl">
-          {/* 罗小黑欢迎 */}
+          {/* 小猫欢迎 */}
           <div className="mb-6">
             <WelcomeLuoXiaoHei />
           </div>

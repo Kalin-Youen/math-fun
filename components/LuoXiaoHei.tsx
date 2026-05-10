@@ -74,7 +74,7 @@ export default function LuoXiaoHei({
         style={{ width, height, transform: `translateY(${bobY}px)` }}
       >
         <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          {/* ====== 罗小黑经典形象 ====== */}
+          {/* ====== 小猫经典形象 ======} */}
           
           {/* 尾巴 - 细长弯曲 */}
           <path 
@@ -91,7 +91,7 @@ export default function LuoXiaoHei({
           {/* 头部 - 圆形，大大的 */}
           <circle cx="100" cy="95" r="55" fill={colors.body} />
           
-          {/* ====== 耳朵 - 罗小黑的标志性特征 ====== */}
+          {/* ====== 耳朵 - 小猫的标志性特征 ======} */}
           {/* 左耳朵外轮廓 - 三角形 */}
           <path d="M55 60 L45 20 L80 50 Z" fill={colors.body} />
           {/* 左耳朵内侧 - 标志性的绿色！ */}
@@ -102,7 +102,7 @@ export default function LuoXiaoHei({
           {/* 右耳朵内侧 - 标志性的绿色！ */}
           <path d="M142 55 L148 28 L128 50 Z" fill={colors.earInner} />
           
-          {/* ====== 眼睛 - 罗小黑的灵魂 ====== */}
+          {/* ====== 眼睛 - 小猫的灵魂 ======} */}
           {/* 左眼白 - 大大的椭圆 */}
           <ellipse cx="72" cy="90" rx="22" ry="26" fill={colors.eye} />
           {/* 左眼珠 - 黑色圆形，稍微偏上 */}
@@ -160,7 +160,7 @@ export default function LuoXiaoHei({
   )
 }
 
-// 简化版罗小黑 - 用于图标等小尺寸
+// 简化版小猫 - 用于图标等小尺寸
 export function MiniLuoXiaoHei({ type = 'default' }: { type?: LuoXiaoHeiType }) {
   const colors = colorConfig[type]
   return (
@@ -191,7 +191,7 @@ export function MiniLuoXiaoHei({ type = 'default' }: { type?: LuoXiaoHeiType }) 
   )
 }
 
-// 浮动罗小黑助手
+// 浮动小猫助手
 export function FloatingLuoXiaoXiaoHei({ 
   type = 'helper',
   onClick,
@@ -223,7 +223,7 @@ export function FloatingLuoXiaoXiaoHei({
   )
 }
 
-// 欢迎罗小黑
+// 欢迎小猫
 export function WelcomeLuoXiaoHei({ 
   gradeId,
   userName = '小朋友'
@@ -237,7 +237,7 @@ export function WelcomeLuoXiaoHei({
   }
 
   const greetings = [
-    `你好呀，${userName}！我是罗小黑，今天一起学习吧！🎉`,
+    `你好呀，${userName}！我是小猫，今天一起学习吧！🎉`,
     `欢迎来到数学乐园！让我带你一起探索~ ✨`,
     `学习是一件很有趣的事情哦，相信你一定可以！💪`,
   ]

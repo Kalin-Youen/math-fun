@@ -171,13 +171,13 @@ export default function FeynmanCoach({ topicSlug }: FeynmanCoachProps) {
       <div className="p-4">
         {!assessmentMode ? (
           <>
-            {/* 罗小黑引导 */}
+            {/* 小猫引导 */}
             <div className="flex items-start gap-4 mb-4">
               <LuoXiaoHei type="teacher" size="md" animate />
               <div className="flex-1 bg-white rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700">{currentStep + 1}</span>
-                  <span className="font-bold text-slate-700">罗小黑老师说</span>
+                  <span className="font-bold text-slate-700">小猫老师说</span>
                 </div>
                 <p className="text-slate-700">{currentStepData.teacherPrompt}</p>
               </div>
