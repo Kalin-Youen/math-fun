@@ -10,105 +10,27 @@ import {
   Mic,
   Volume2,
   Brain,
-  Lightbulb,
-  Calculator,
-  BookOpen,
-  Sparkles,
   Loader2,
-  Image as ImageIcon,
   X,
-  CheckCircle2,
-  MessageCircle,
   History,
-  Trash2,
-  Download
+  Trash2
 } from 'lucide-react'
+import { chatWithAI, solvePhotoProblemWithAI } from '@/lib/nvidia-ai'
 
 // 消息类型
 interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
-  type: 'text' | 'image' | 'voice'
+  type: 'text' | 'image'
   timestamp: number
   imageUrl?: string
-  isAnalyzing?: boolean
-}
-
-// 解题步骤
-interface SolutionStep {
-  step: number
-  title: string
-  content: string
-  formula?: string
-}
-
-// AI 响应模拟
-const mockAIResponse = (question: string, imageUploaded?: boolean): { content: string; steps?: SolutionStep[] } => {
-  // 根据问题内容返回不同的模拟响应
-  if (imageUploaded) {
-    return {
-      content: '我看到你上传了一道数学题。让我来帮你分析：',
-      steps: [
-        { step: 1, title: '识别题目', content: '这是一道关于加减法的应用题' },
-        { step: 2, title: '分析已知条件', content: '题目中给出了两个数量，需要求它们的和' },
-        { step: 3, title: '列出算式', content: '根据题意，我们可以列出：15 + 8 = ?', formula: '15 + 8 = 23' },
-        { step: 4, title: '计算结果', content: '15加8等于23，所以答案是23' },
-      ]
-    }
-  }
-  
-  if (question.includes('乘') || question.includes('×')) {
-    return {
-      content: '乘法是加法的简便运算。比如 3×4，表示4个3相加：',
-      steps: [
-        { step: 1, title: '理解乘法含义', content: '3×4 = 3 + 3 + 3 + 3' },
-        { step: 2, title: '逐步计算', content: '3+3=6，6+3=9，9+3=12' },
-        { step: 3, title: '得出答案', content: '所以 3×4 = 12', formula: '3 × 4 = 12' },
-      ]
-    }
-  }
-  
-  if (question.includes('除') || question.includes('÷')) {
-    return {
-      content: '除法是乘法的逆运算。比如 12÷3，就是想：3乘几等于12？',
-      steps: [
-        { step: 1, title: '理解除法含义', content: '12÷3 表示把12平均分成3份' },
-        { step: 2, title: '想乘法口诀', content: '三（ ）十二，三四十二！' },
-        { step: 3, title: '得出答案', content: '所以 12÷3 = 4', formula: '12 ÷ 3 = 4' },
-      ]
-    }
-  }
-  
-  if (question.includes('分数') || question.includes('/')) {
-    return {
-      content: '分数表示一个整体的一部分。比如 1/2 表示一半。',
-      steps: [
-        { step: 1, title: '理解分数', content: '分母表示平均分的份数，分子表示取的份数' },
-        { step: 2, title: '同分母加减', content: '分母不变，分子相加减' },
-        { step: 3, title: '举例', content: '1/4 + 2/4 = 3/4', formula: '¹/₄ + ²/₄ = ³/₄' },
-      ]
-    }
-  }
-  
-  // 默认响应
-  return {
-    content: '我来帮你解答这个问题。我们可以按照以下步骤：',
-    steps: [
-      { step: 1, title: '仔细读题', content: '先理解题目问的是什么，找出已知条件' },
-      { step: 2, title: '分析数量关系', content: '看看这些数量之间有什么关系' },
-      { step: 3, title: '选择方法', content: '根据数量关系选择合适的计算方法' },
-      { step: 4, title: '计算验证', content: '算出结果后，检查是否合理' },
-    ]
-  }
 }
 
 // 语音合成
 const speak = (text: string) => {
   if ('speechSynthesis' in window) {
-    // 取消之前的语音
     window.speechSynthesis.cancel()
-    
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.lang = 'zh-CN'
     utterance.rate = 0.9
@@ -122,7 +44,7 @@ export default function AITutorPage() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: '你好！我是你的AI数学助手。你可以问我任何数学问题，或者拍照上传题目，我会一步步帮你解答！',
+      content: '你好！我是小猫AI数学助手，由NVIDIA Nemotron-3-Super-120B驱动。你可以问我任何数学问题，或者拍照上传题目！',
       type: 'text',
       timestamp: Date.now(),
     }
@@ -132,36 +54,24 @@ export default function AITutorPage() {
   const [isRecording, setIsRecording] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [showHistory, setShowHistory] = useState(false)
-  const [chatHistory, setChatHistory] = useState<{id: string; title: string; date: number}[]>([])
+  const [grade, setGrade] = useState(3)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  // 自动滚动到底部
+  // 自动滚动
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
   
-  // 加载历史记录
-  useEffect(() => {
-    const saved = localStorage.getItem('aiChatHistory')
-    if (saved) {
-      try {
-        setChatHistory(JSON.parse(saved))
-      } catch (e) {
-        console.error('加载历史失败')
-      }
-    }
-  }, [])
-  
-  // 发送消息
-  const sendMessage = async (content: string, type: 'text' | 'image' = 'text') => {
+  // 发送消息 - 使用真正的NVIDIA AI
+  const sendMessage = async (content: string) => {
     if (!content.trim() && !selectedImage) return
     
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: content || '[图片]',
-      type,
+      type: selectedImage ? 'image' : 'text',
       timestamp: Date.now(),
       imageUrl: selectedImage || undefined,
     }
@@ -170,38 +80,48 @@ export default function AITutorPage() {
     setInput('')
     setIsLoading(true)
     
-    // 模拟AI思考
-    setTimeout(() => {
-      const response = mockAIResponse(content, !!selectedImage)
+    try {
+      let aiContent = ''
+      
+      if (selectedImage) {
+        // 使用AI识别图片题目
+        const base64 = selectedImage.split(',')[1]
+        const result = await solvePhotoProblemWithAI(base64, grade)
+        if (result) {
+          aiContent = `📷 识别题目：${result.recognizedText}\n\n💡 解答步骤：\n${result.solution}\n\n✅ 答案：${result.answer}\n\n📚 相关知识点：${result.relatedKnowledge?.join('、')}`
+        } else {
+          aiContent = '抱歉，图片识别失败，请尝试重新上传或直接用文字描述题目。'
+        }
+      } else {
+        // 使用AI对话
+        const context = messages.slice(-5).map(m => `${m.role}: ${m.content}`).join('\n')
+        const response = await chatWithAI(content, context, grade)
+        aiContent = response.content || '抱歉，AI响应失败，请重试。'
+      }
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: response.content,
+        content: aiContent,
         type: 'text',
         timestamp: Date.now(),
       }
       
       setMessages(prev => [...prev, aiMessage])
+      speak(aiContent)
+    } catch (error) {
+      console.error('AI Error:', error)
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '抱歉，AI服务暂时不可用，请稍后重试。',
+        type: 'text',
+        timestamp: Date.now(),
+      }])
+    } finally {
       setIsLoading(false)
       setSelectedImage(null)
-      
-      // 自动语音朗读
-      speak(response.content)
-      
-      // 保存到历史
-      saveToHistory(content || '图片问题')
-    }, 1500)
-  }
-  
-  // 保存到历史
-  const saveToHistory = (title: string) => {
-    const newHistory = [
-      { id: Date.now().toString(), title: title.slice(0, 20), date: Date.now() },
-      ...chatHistory.slice(0, 19)
-    ]
-    setChatHistory(newHistory)
-    localStorage.setItem('aiChatHistory', JSON.stringify(newHistory))
+    }
   }
   
   // 处理图片上传
@@ -216,21 +136,28 @@ export default function AITutorPage() {
     }
   }
   
-  // 语音输入（模拟）
+  // 语音输入
   const toggleRecording = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert('您的浏览器不支持语音识别')
+      return
+    }
+    
     if (isRecording) {
       setIsRecording(false)
-      // 模拟语音识别结果
-      setTimeout(() => {
-        setInput('3乘以4等于多少')
-      }, 500)
     } else {
       setIsRecording(true)
-      // 3秒后自动停止
-      setTimeout(() => {
+      const recognition = new (window as any).webkitSpeechRecognition()
+      recognition.lang = 'zh-CN'
+      recognition.onresult = (event: any) => {
+        const text = event.results[0][0].transcript
+        setInput(text)
         setIsRecording(false)
-        setInput('3乘以4等于多少')
-      }, 3000)
+      }
+      recognition.onerror = () => {
+        setIsRecording(false)
+      }
+      recognition.start()
     }
   }
   
@@ -240,7 +167,7 @@ export default function AITutorPage() {
       setMessages([{
         id: 'welcome',
         role: 'assistant',
-        content: '你好！我是你的AI数学助手。你可以问我任何数学问题，或者拍照上传题目，我会一步步帮你解答！',
+        content: '你好！我是小猫AI数学助手，由NVIDIA Nemotron-3-Super-120B驱动。你可以问我任何数学问题，或者拍照上传题目！',
         type: 'text',
         timestamp: Date.now(),
       }])
@@ -262,27 +189,28 @@ export default function AITutorPage() {
                 </div>
                 <div>
                   <h1 className="text-lg font-bold text-slate-800">AI数学助手</h1>
-                  <p className="text-xs text-slate-500">拍照解题 · 语音讲解 · 智能分析</p>
+                  <p className="text-xs text-slate-500">Powered by NVIDIA Nemotron-3</p>
                 </div>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-                title="历史记录"
+              <select 
+                value={grade} 
+                onChange={(e) => setGrade(Number(e.target.value))}
+                className="px-3 py-1.5 bg-slate-100 rounded-lg text-sm"
               >
-                <History className="w-5 h-5 text-slate-600" />
-              </button>
-              <button
-                onClick={clearChat}
-                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-                title="清空对话"
-              >
+                <option value={1}>一年级</option>
+                <option value={2}>二年级</option>
+                <option value={3}>三年级</option>
+                <option value={4}>四年级</option>
+                <option value={5}>五年级</option>
+                <option value={6}>六年级</option>
+              </select>
+              <button onClick={clearChat} className="p-2 hover:bg-slate-100 rounded-xl">
                 <Trash2 className="w-5 h-5 text-slate-600" />
               </button>
-              <Link href="/" className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+              <Link href="/" className="p-2 hover:bg-slate-100 rounded-xl">
                 <Home className="w-5 h-5 text-slate-600" />
               </Link>
             </div>
@@ -290,202 +218,103 @@ export default function AITutorPage() {
         </div>
       </header>
       
-      <div className="flex max-w-6xl mx-auto">
-        {/* 历史记录侧边栏 */}
-        {showHistory && (
-          <div className="w-64 bg-white border-r border-slate-200 h-[calc(100vh-73px)] overflow-y-auto">
-            <div className="p-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-800">对话历史</h3>
-            </div>
-            {chatHistory.length === 0 ? (
-              <div className="p-4 text-center text-slate-400 text-sm">
-                暂无历史记录
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {chatHistory.map((chat) => (
-                  <button
-                    key={chat.id}
-                    className="w-full p-4 text-left hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="font-medium text-slate-700 text-sm truncate">
-                      {chat.title}
+      <main className="max-w-4xl mx-auto flex flex-col h-[calc(100vh-73px)]">
+        {/* 消息列表 */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((message) => (
+            <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  {message.role === 'assistant' && (
+                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <Brain className="w-4 h-4 text-white" />
                     </div>
-                    <div className="text-xs text-slate-400">
-                      {new Date(chat.date).toLocaleDateString('zh-CN')}
+                  )}
+                  <span className="text-xs text-slate-400">
+                    {new Date(message.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                
+                <div className={`rounded-2xl p-4 ${
+                  message.role === 'user' ? 'bg-indigo-500 text-white' : 'bg-white shadow-sm border border-slate-100'
+                }`}>
+                  {message.imageUrl && (
+                    <div className="mb-3">
+                      <img src={message.imageUrl} alt="题目" className="max-w-full max-h-48 rounded-xl" />
                     </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* 主聊天区域 */}
-        <main className="flex-1 flex flex-col h-[calc(100vh-73px)]">
-          {/* 消息列表 */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-[80%] ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
-                  {/* 头像 */}
-                  <div className="flex items-center gap-2 mb-1">
-                    {message.role === 'assistant' && (
-                      <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <Brain className="w-4 h-4 text-white" />
-                      </div>
-                    )}
-                    <span className="text-xs text-slate-400">
-                      {new Date(message.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                  )}
+                  
+                  <div className={`text-sm leading-relaxed whitespace-pre-wrap ${message.role === 'user' ? 'text-white' : 'text-slate-700'}`}>
+                    {message.content}
                   </div>
                   
-                  {/* 消息内容 */}
-                  <div className={`rounded-2xl p-4 ${
-                    message.role === 'user'
-                      ? 'bg-indigo-500 text-white'
-                      : 'bg-white shadow-sm border border-slate-100'
-                  }`}>
-                    {/* 图片 */}
-                    {message.imageUrl && (
-                      <div className="mb-3">
-                        <img
-                          src={message.imageUrl}
-                          alt="上传的题目"
-                          className="max-w-full rounded-xl"
-                        />
-                      </div>
-                    )}
-                    
-                    {/* 文字 */}
-                    <div className={`text-sm leading-relaxed ${message.role === 'user' ? 'text-white' : 'text-slate-700'}`}>
-                      {message.content}
-                    </div>
-                    
-                    {/* AI 语音播放按钮 */}
-                    {message.role === 'assistant' && (
-                      <button
-                        onClick={() => speak(message.content)}
-                        className="mt-2 flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-600"
-                      >
-                        <Volume2 className="w-3 h-3" />
-                        朗读
-                      </button>
-                    )}
-                  </div>
+                  {message.role === 'assistant' && (
+                    <button onClick={() => speak(message.content)} className="mt-2 flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-600">
+                      <Volume2 className="w-3 h-3" />
+                      朗读
+                    </button>
+                  )}
                 </div>
               </div>
-            ))}
-            
-            {/* 加载中 */}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
-                    <span className="text-sm text-slate-500">AI正在思考...</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div ref={messagesEndRef} />
-          </div>
+            </div>
+          ))}
           
-          {/* 输入区域 */}
-          <div className="p-4 bg-white border-t border-slate-200">
-            {/* 图片预览 */}
-            {selectedImage && (
-              <div className="mb-3 relative inline-block">
-                <img
-                  src={selectedImage}
-                  alt="预览"
-                  className="h-20 rounded-xl"
-                />
-                <button
-                  onClick={() => setSelectedImage(null)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
-                >
-                  <X className="w-3 h-3" />
-                </button>
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
+                  <span className="text-sm text-slate-500">NVIDIA AI思考中...</span>
+                </div>
               </div>
-            )}
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+        
+        {/* 输入区域 */}
+        <div className="p-4 bg-white border-t border-slate-200">
+          {selectedImage && (
+            <div className="mb-3 relative inline-block">
+              <img src={selectedImage} alt="预览" className="h-20 rounded-xl" />
+              <button onClick={() => setSelectedImage(null)} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-2">
+            <input type="file" accept="image/*" onChange={handleImageUpload} ref={fileInputRef} className="hidden" />
+            <button onClick={() => fileInputRef.current?.click()} className="p-3 hover:bg-slate-100 rounded-xl transition-colors" title="拍照解题">
+              <Camera className="w-5 h-5 text-slate-600" />
+            </button>
             
-            <div className="flex items-center gap-2">
-              {/* 拍照按钮 */}
+            <button onClick={toggleRecording} className={`p-3 rounded-xl transition-colors ${isRecording ? 'bg-red-100 text-red-500' : 'hover:bg-slate-100'}`}>
+              {isRecording ? <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" /> : <Mic className="w-5 h-5 text-slate-600" />}
+            </button>
+            
+            <div className="flex-1">
               <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                ref={fileInputRef}
-                className="hidden"
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendMessage(input)}
+                placeholder="输入数学问题，或拍照上传..."
+                className="w-full px-4 py-3 bg-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="p-3 hover:bg-slate-100 rounded-xl transition-colors"
-                title="拍照/上传图片"
-              >
-                <Camera className="w-5 h-5 text-slate-600" />
-              </button>
-              
-              {/* 语音按钮 */}
-              <button
-                onClick={toggleRecording}
-                className={`p-3 rounded-xl transition-colors ${
-                  isRecording ? 'bg-red-100 text-red-500' : 'hover:bg-slate-100'
-                }`}
-                title="语音输入"
-              >
-                {isRecording ? (
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    <span className="text-xs">录音中...</span>
-                  </div>
-                ) : (
-                  <Mic className="w-5 h-5 text-slate-600" />
-                )}
-              </button>
-              
-              {/* 输入框 */}
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage(input)}
-                  placeholder="输入数学问题，或拍照上传题目..."
-                  className="w-full px-4 py-3 bg-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              
-              {/* 发送按钮 */}
-              <button
-                onClick={() => sendMessage(input, selectedImage ? 'image' : 'text')}
-                disabled={isLoading || (!input.trim() && !selectedImage)}
-                className="p-3 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Send className="w-5 h-5" />
-              </button>
             </div>
             
-            {/* 快捷问题 */}
-            <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-              {['3×4怎么算', '12÷3等于几', '什么是分数', '如何解应用题'].map((q) => (
-                <button
-                  key={q}
-                  onClick={() => sendMessage(q)}
-                  className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm whitespace-nowrap hover:bg-slate-200 transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
+            <button
+              onClick={() => sendMessage(input)}
+              disabled={isLoading || (!input.trim() && !selectedImage)}
+              className="p-3 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 disabled:opacity-50 transition-colors"
+            >
+              <Send className="w-5 h-5" />
+            </button>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   )
 }

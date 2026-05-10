@@ -1,0 +1,15 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "math-fun-ai-proxy"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+# 部署后访问地址: https://math-fun-ai-proxy.<你的子域>.workers.dev
+# 或绑定自定义域名
+
+[vars]
+NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
+MODEL = "nemotron-3-super-120b-a12b"
+
+# ⚠️ 重要：API Key 不要写在这里！
+# 部署时用命令设置：
+# wrangler secret put NVIDIA_API_KEY
