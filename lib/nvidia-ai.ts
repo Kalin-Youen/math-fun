@@ -39,16 +39,20 @@ export async function callNVIDIAAI(prompt: string, systemPrompt?: string): Promi
     })
 
     if (!response.ok) {
-      const error = await response.text()
-      console.error('NVIDIA API Error:', error)
-      return { content: '', error: `API Error: ${response.status}` }
+      const errorData = await response.json().catch(() => null)
+      const errorMsg = errorData?.detail || errorData?.error || await response.text()
+      console.error('NVIDIA API Error:', response.status, errorMsg)
+      return { content: '', error: `API错误(${response.status}): ${errorMsg}` }
     }
 
     const data = await response.json()
+    if (!data.choices || !data.choices[0]) {
+      return { content: '', error: `API返回异常: ${JSON.stringify(data).slice(0, 200)}` }
+    }
     return { content: data.choices[0]?.message?.content || '' }
   } catch (error) {
     console.error('NVIDIA AI Error:', error)
-    return { content: '', error: String(error) }
+    return { content: '', error: `网络错误: ${String(error)}` }
   }
 }
 
